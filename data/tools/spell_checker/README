@@ -1,0 +1,21 @@
+This program was made as a prize winning solution for a programming contest called MobMe CodeJam. 
+It is implemented using regular Hashtable as well as with the BloomFilter data structure.It is inpired from 
+Peter Norvig's work on the same subject, which can be found here -> http://norvig.com/spell-correct.html.  
+ 
+Dependancies(using Hashtable)
+1. Dictionary used by spellchecker(dictionary.txt)
+2. Word Database used by spellingsuggest(wordprobabilityDatabase)
+3. Input Text File used by spellchecker(inputtext.txt)
+
+Usage
+Compile the source code($javac spellchecker.java) and then run its class($java spellchecker).
+
+
+Dependancies(using Bloom Filter)
+1. Dictionary used by spellchecker(dictionary.txt)
+2. Word Database used by spellingsuggest(wordprobabilityDatabase)
+3. Input Text File used by spellchecker(inputtext.txt)
+4. Bloom Filter Class used by spellchecker(bloomfilter12.java)
+
+Usage
+Compile the source code($javac spellchecker12.java) and then run its class($java spellchecker12).
