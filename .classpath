@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="data/tools/spell_checker"/>
+	<classpathentry excluding="models/|models/sentDetection/" kind="src" path="data/tools/NLPTools"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="data/tools/NLPTools/lib/commons-cli-1.2.jar"/>
+	<classpathentry kind="lib" path="data/tools/NLPTools/lib/junit.jar"/>
+	<classpathentry kind="lib" path="data/tools/NLPTools/lib/JVnTagger.jar"/>
+	<classpathentry kind="lib" path="data/tools/NLPTools/lib/maxent-2.5.2.jar"/>
+	<classpathentry kind="lib" path="data/tools/NLPTools/lib/opennlp-tools-1.4.3.jar"/>
+	<classpathentry kind="lib" path="data/tools/NLPTools/lib/stanford-parser.jar"/>
+	<classpathentry kind="lib" path="data/tools/NLPTools/lib/stanford-tregex.jar"/>
+	<classpathentry kind="lib" path="data/tools/NLPTools/lib/trove.jar"/>
+	<classpathentry kind="lib" path="data/tools/NLPTools/lib/vn.hus.nlp.fsm-1.0.0.jar"/>
+	<classpathentry kind="lib" path="data/tools/NLPTools/lib/vn.hus.nlp.sd-2.0.0.jar"/>
+	<classpathentry kind="lib" path="data/tools/NLPTools/lib/vn.hus.nlp.tokenizer-4.1.1.jar"/>
+	<classpathentry kind="lib" path="data/tools/NLPTools/lib/vn.hus.nlp.utils-1.0.0.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
