@@ -1,0 +1,17 @@
+Lưu mỗi từ sử dụng tokenizer ( cả dấu câu) của 1 văn bản vào list<String>
+Tạo bộ từ điển có từ ghép (có gạch nối 2 từ).
+Kiểm tra ngữ pháp, nếu đúng thì bỏ qua, nếu sai thì suggest và ghi đè.
+Kết quả cuối cùng ta có được 1 văn bản. (1)
+‘
+Với mỗi văn bản ta tách từng câu.
+Gán nhãn các thể loại từ trong câu.
+Những từ không có ý nghĩa, stopword sẽ được loại bỏ. các từ còn lại được ghi vào 1 file mới và ghi lại các từ keyword cảu câu đó. Ta tiếp tục cho đến hết văn bản. Sau đó, ta đánh trọng số các keyword và lựa ra các keyword có ích -> ta có được keyword của file thứ i và và ghi thông tin vào dòng thứ i của file type_doc_list_keyword.txt (2)
+
+Tương tự với các loại văn bản khác ta có được tổng cộng 3 file.
+
+trong mỗi file thì độ dài ngắn của các vector sẽ khác nhau vì có tài liệu thì chứa nhiều từ, có tài liệu chứa ít từ.
+
+Sắp xếp tất cả các từ có trong loại văn bản theo thứ tự giảm dần về độ phổ biến, sau đó với mỗi dòng ( tương ứng với mỗi tài liệu) đem so khớp với dãy keyword vào chọn ra k keyword từ cao -> thấp ( k tuỳ điều kiện để chọn).
+
+Xây dựng LDA ???
+K-NN ???
