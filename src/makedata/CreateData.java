@@ -85,20 +85,24 @@ public class CreateData {
 		credat.readFile();
 		credat.spellCheckandRepair();
 		// TODO Auto-generated method stub
-		String vb = "Camera của Galaxy S7 là một trong vài camera trên điện thoại tốt nhất hiện nay. Công bằng mà nói thì SamSung cải tiến camera trên điện thoại rõ nhất bắt đầu từ chiếc Note 5, và có thay đổi rất nhiều về tư duy màu sắc từ chiếc Galaxy S6. Đó là bộ xử lý hình sau.";
-
-		String cau[] = credat.sentSlipt(vb);
-		String[] tachtu = new String[cau.length];
-
-		for (int i = 0; i < cau.length; i++) {
-			tachtu[i] = credat.wordslipt(cau[i]);
-		}
-
-		for (int i = 0; i < cau.length; i++) {
-			System.out.println(cau[i]);
-			System.out.println(tachtu[i]);
-		}
-		System.out.println(tachtu[1]);
+		// String vb = "Camera của Galaxy S7 là một trong vài camera trên điện
+		// thoại tốt nhất hiện nay. Công bằng mà nói thì SamSung cải tiến camera
+		// trên điện thoại rõ nhất bắt đầu từ chiếc Note 5, và có thay đổi rất
+		// nhiều về tư duy màu sắc từ chiếc Galaxy S6. Đó là bộ xử lý hình
+		// sau.";
+		//
+		// String cau[] = credat.sentSlipt(vb);
+		// String[] tachtu = new String[cau.length];
+		//
+		// for (int i = 0; i < cau.length; i++) {
+		// tachtu[i] = credat.wordslipt(cau[i]);
+		// }
+		//
+		// for (int i = 0; i < cau.length; i++) {
+		// System.out.println(cau[i]);
+		// System.out.println(tachtu[i]);
+		// }
+		// System.out.println(tachtu[1]);
 	}
 
 }

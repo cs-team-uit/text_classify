@@ -10,12 +10,19 @@ package makedata;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+
+import vn.hus.nlp.sd.SentenceDetector;
+import vn.hus.nlp.tokenizer.VietTokenizer;
 
 public class spellchecker {
 
@@ -24,6 +31,11 @@ public class spellchecker {
 	boolean suggestWord; // To indicate whether the word is spelled correctly or
 							// not.
 	spellingsuggest suggest;
+
+	File f = new File(".");
+
+	// Check if sentence has special symbol like ; , . ! ? ...
+	boolean hasSpecialSymbol;
 
 	public spellchecker() {
 		dictionary = new Hashtable<String, String>();
@@ -58,6 +70,39 @@ public class spellchecker {
 		}
 	}
 
+	public String[] sentSlipt(String vb) {
+		String[] ret = null;
+		try {
+			SentenceDetector detector = new SentenceDetector(
+					f.getAbsolutePath() + "/data/tools/NLPTools/models/sentDetection/VietnameseSD.bin.gz");
+			ret = detector.sentDetect(vb);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return ret;
+	}
+
+	public String wordslipt(String cau) {
+		String ret = null;
+		VietTokenizer tokenizer = new VietTokenizer(f.getAbsolutePath() + "/data/tools/NLPTools/tokenizer.properties");
+		ret = tokenizer.segment(cau);
+		return ret;
+	}
+
+	public static String readStream(InputStream is) {
+		StringBuilder sb = new StringBuilder(512);
+		try {
+			Reader r = new InputStreamReader(is, "UTF-8");
+			int c = 0;
+			while ((c = r.read()) != -1) {
+				sb.append((char) c);
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		return sb.toString();
+	}
+
 	public void doCheck(List<String> list_doc) {
 		try {
 			FileWriter fw;
@@ -65,6 +110,7 @@ public class spellchecker {
 			for (Iterator<String> i = list_doc.iterator(); i.hasNext();) {
 				// Get file dir
 				String file = i.next();
+				// Create
 				File orifile = new File(file);
 				// Create temp file
 				File temp = new File(file + "-t.txt");
@@ -73,45 +119,65 @@ public class spellchecker {
 				// Read and check the input from the text file
 				BufferedReader inputFile = new BufferedReader(new FileReader(file));
 				System.out.println("Reading from " + file);
+				// Read all text and split sentence then save to array
+				InputStream is = null;
+				is = new FileInputStream(file);
+				String sentence[] = sentSlipt(readStream(is));
+				// Create word split array (original)
+				String[] wordsplit = new String[sentence.length];
+				// Create array that store every word after split by space
+				String[] word = new String[sentence.length];
+				// Store in array
+				for (int j = 0; j < sentence.length; j++) {
+					wordsplit[j] = wordslipt(sentence[j]);
+				}
+				// Process every wordsplit
+				for (String wl : wordsplit) {
+					// Store every word splited to array
+					word = wl.split(" ");
 
-				// Reads input lines one by one
-				while (inputFile.ready()) {
-					String s = inputFile.readLine();
-					System.out.println(s);
-					String[] result = s.split("\\s");
-
-					for (int x = 0; x < result.length; x++) {
+					for (int x = 0; x < word.length; x++) {
+						System.out.println(word[x]);
 						suggestWord = true;
-						String outputWord = checkWord(result[x]);
+						hasSpecialSymbol = false;
+						String outputWord = checkWord(word[x]);
+						// if outputWord length = 1 -> symbol -> no need suggest
+						if (outputWord.length() == 1) {
+							suggestWord = false;
+							hasSpecialSymbol = true;
+						}
 
+						String result = outputWord.replace('_', ' ');
+						// System.out.println("outputWord = " +
+						// outputWord.replace('_', ' '));
 						if (suggestWord) {
-							System.out.println(
-									"Suggestions for " + result[x] + " are:  " + suggest.correct(outputWord) + "\n");
+							// System.out.println(
+							// "Suggestions for " + word[x] + " are: " +
+							// suggest.correct(outputWord) + "\n");
 							String correctword = suggest.correct(outputWord);
-							if (correctword.length() > 6) { // error
-								bw.write(outputWord + " ");
-							} else
-								bw.write(suggest.correct(outputWord) + " ");
+							String correct_result = correctword.replace('_', ' ');
+							if (correctword.length() > 10) { // error
+								if (hasSpecialSymbol)
+									bw.write(result);
+								else
+									bw.write(result + " ");
+							} else if (hasSpecialSymbol)
+								bw.write(correct_result);
+							else
+								bw.write(correct_result + " ");
 						} else {
-							bw.write(outputWord + " ");
+							if (hasSpecialSymbol)
+								bw.write(result);
+							else
+								bw.write(result + " ");
 						}
 					}
 				}
 				bw.close();
-				if (orifile.exists()) {
-					boolean success = orifile.delete();
-					if (success) {
-
-					}
-				}
+				if (orifile.exists())
+					orifile.delete();
 				// Rename file (or directory)
 				boolean success = temp.renameTo(orifile);
-
-				if (!success) {
-					// File was not successfully renamed
-				}
-
-				inputFile.close();
 			}
 		} catch (IOException e) {
 			System.out.println("IOException Occured! ");
