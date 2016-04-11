@@ -16,5 +16,7 @@
 	<classpathentry kind="lib" path="data/tools/NLPTools/lib/vn.hus.nlp.tokenizer-4.1.1.jar"/>
 	<classpathentry kind="lib" path="data/tools/NLPTools/lib/vn.hus.nlp.utils-1.0.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/Volumes/Study/Project/text_classify/data/tools/weka.jar"/>
+	<classpathentry kind="lib" path="/Volumes/Study/Project/text_classify/data/tools/libsvm.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

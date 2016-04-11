@@ -126,7 +126,7 @@ public class spellchecker {
 				// Create word split array (original)
 				String[] wordsplit = new String[sentence.length];
 				// Create array that store every word after split by space
-				String[] word = new String[sentence.length];
+				String[] word = new String[256];
 				// Store in array
 				for (int j = 0; j < sentence.length; j++) {
 					wordsplit[j] = wordslipt(sentence[j]);
@@ -233,16 +233,19 @@ public class spellchecker {
 
 		// Checking for "!\"",etc ... in the problem (example: watch!" when
 		// watch is present in the dictionary)
-		if (length > 2 && word.substring(length - 2).equals(",\"") || word.substring(length - 2).equals(".\"")
-				|| word.substring(length - 2).equals("?\"") || word.substring(length - 2).equals("!\"")) {
-			unpunctWord = word.substring(0, length - 2);
+		if (length > 2) {
+			if (word.substring(length - 2).equals(",\"") || word.substring(length - 2).equals(".\"")
+					|| word.substring(length - 2).equals("?\"") || word.substring(length - 2).equals("!\"")) {
+				unpunctWord = word.substring(0, length - 2);
 
-			if ((wordCheck = dictionary.get(unpunctWord)) != null) {
-				suggestWord = false; // no need to ask for suggestion for a
-										// correct word.
-				return wordCheck;
-			} else // not found
-				return unpunctWord; // removing the inflections and returning
+				if ((wordCheck = dictionary.get(unpunctWord)) != null) {
+					suggestWord = false; // no need to ask for suggestion for a
+											// correct word.
+					return wordCheck;
+				} else // not found
+					return unpunctWord; // removing the inflections and
+										// returning
+			}
 		}
 
 		// After all these checks too, word could not be corrected, hence it
