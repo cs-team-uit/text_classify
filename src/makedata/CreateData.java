@@ -15,24 +15,28 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import jvntagger.MaxentTagger;
+import models.GibbsSamplingLDA;
 import vn.hus.nlp.sd.SentenceDetector;
 import vn.hus.nlp.tokenizer.VietTokenizer;
 
 public class CreateData {
-	public static final String TECH_DOC_PATH = "/data/documents/technology/";
-	public static final String EDU_DOC_PATH = "/data/documents/education/";
-	public static final String FASH_DOC_PATH = "/data/documents/fashion/";
+	public static final String TECH_DOC_PATH = "/data/documents/train_data/technology/";
+	public static final String EDU_DOC_PATH = "/data/documents/train_data/education/";
+	public static final String FASH_DOC_PATH = "/data/documents/train_data/fashion/";
 
 	private List<String> tech_doc = new ArrayList<String>();
 	private List<String> edu_doc = new ArrayList<String>();
 	private List<String> fash_doc = new ArrayList<String>();
+	int document_count = 90;
 	public File f;
 	public spellchecker sc;
 	SentenceDetector detector;
 	VietTokenizer tokenizer;
 	MaxentTagger tagger;
+	GibbsSamplingLDA LDA;
 
 	String sentence[] = new String[256];
 	String[] wordsplit = new String[sentence.length];
@@ -49,10 +53,7 @@ public class CreateData {
 
 	int all_keyword_size;
 
-	int[][] knn_matrix;
-	int[][] svm_matrix;
-
-	int[] knn_label;
+	// int[] knn_label;
 
 	CreateData() throws IOException {
 		f = new File(".");
@@ -137,11 +138,24 @@ public class CreateData {
 	}
 
 	public void set_typetagger() {
-		type_tagger[0] = "\\Np";
-		type_tagger[1] = "\\Nc";
-		type_tagger[2] = "\\Nu";
-		type_tagger[3] = "\\N";
-		type_tagger[4] = "\\V";
+		type_tagger[0] = "/Np";
+		type_tagger[1] = "/Nc";
+		type_tagger[2] = "/Nu";
+		type_tagger[3] = "/Ny";
+		type_tagger[4] = "/N";
+		type_tagger[5] = "/V";
+	}
+
+	public boolean isAlpha(String name) {
+		char[] chars = name.toCharArray();
+
+		for (char c : chars) {
+			if (!Character.isLetter(c)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	public void extractWord(List<String> list_doc, String doc_type) {
@@ -149,16 +163,16 @@ public class CreateData {
 			FileWriter fw;
 			BufferedWriter bw;
 			set_typetagger();
-			temp_wordoffile.clear();
-			wordoffile.clear();
-			File temp = new File(f.getAbsolutePath() + "/data/trainning/" + doc_type + "/listword.txt");
+
+			File temp = new File(f.getAbsolutePath() + "/data/trainning/" + doc_type + "/temp_listword.txt");
 			fw = new FileWriter(temp.getAbsoluteFile());
 			bw = new BufferedWriter(fw);
 			for (Iterator<String> i = list_doc.iterator(); i.hasNext();) {
 				// Get file dir
+				temp_wordoffile.clear();
+				wordoffile.clear();
 				String file = i.next();
 				// Read and check the input from the text file
-				BufferedReader inputFile = new BufferedReader(new FileReader(file));
 				System.out.println("Reading from " + file);
 				// Read all text and split sentence then save to array
 				InputStream is = null;
@@ -171,36 +185,148 @@ public class CreateData {
 				// Process every wordtagger
 				for (String wtag : wordtagger) {
 					// Store every word splited to array
-					word = wtag.split(" ");
+					if (wtag != null) {
+						word = wtag.split(" ");
+						boolean isChoose = false; // Xac nhan word da dc xet va
+													// dc
+													// chon
+						for (int x = 0; x < word.length; x++) {
 
-					for (int x = 0; x < word.length; x++) {
-						for (String typtag : type_tagger) {
-							// Type filter
-							if (word[x].indexOf(typtag) > 0) {
-								word[x].replace(typtag, "");
-								break;
+							for (String typtag : type_tagger) {
+								// Type filter
+								if (typtag != null) {
+
+									if (word[x].indexOf(typtag) > 0 && word[x].indexOf("&") < 0
+											&& word[x].indexOf("+") < 0 && word[x].indexOf("\"") < 0
+											&& word[x].length() > 1) {
+										word[x] = word[x].replace(typtag, "");
+										word[x] = word[x].toLowerCase();
+										isChoose = true;
+										break;
+									}
+								} else
+									break;
 							}
-						}
-						// If chua co trong csdl, them vao , nguoc lai bo qua
-						if (!temp_wordoffile.contains(word[x])) {
-							// Them vao csdl
-							temp_wordoffile.add(word[x]);
+							// If chua co trong csdl, them vao , nguoc lai bo
+							// qua
+							if (!temp_wordoffile.contains(word[x])) {
+								if (isChoose == true) {
+									// Them vao csdl
+									temp_wordoffile.add(word[x]);
+									isChoose = false;
+								}
+							} else if (isChoose == true)
+								isChoose = false;
+
 						}
 
 					}
-
 				}
-
-				// Tinh tf-idf va luu lai 10 tu quan trong vao file o 1 dong
-				// moi
-				Collections.sort(wordoffile);
-				for (int k = 0; k < 10; k++) {
-					bw.write(wordoffile.get(k) + " ");
+				Collections.sort(temp_wordoffile);
+				for (int k = 0; k < 100; k++) {
+					bw.write(temp_wordoffile.get(k) + " ");
 				}
 				bw.write("\n");
-				bw.close();
+
 			}
-		} catch (IOException e) {
+			bw.close();
+		} catch (
+
+		IOException e) {
+			System.out.println("IOException Occured! ");
+			e.printStackTrace();
+			// System.exit(-1);
+		}
+	}
+
+	public int countNumberEqual(String[] itemList, String itemToCheck) {
+		int count = 0;
+		for (String i : itemList) {
+			if (i.equals(itemToCheck)) {
+				count++;
+			}
+		}
+		return count;
+	}
+
+	public void swapWeight(double a, double b) {
+		double temp = a;
+		a = b;
+		b = temp;
+	}
+
+	public void swapString(String a, String b) {
+		AtomicReference<String> String1 = new AtomicReference<String>(a);
+		AtomicReference<String> String2 = new AtomicReference<String>(b);
+		String1.set(String2.getAndSet(String1.get()));
+
+	}
+
+	public void calcVSM(String doc_type) {
+		try {
+			FileWriter fw;
+			BufferedWriter bw;
+			set_typetagger();
+
+			File flistword = new File(f.getAbsolutePath() + "/data/trainning/" + doc_type + "/listword.txt");
+			fw = new FileWriter(flistword.getAbsoluteFile());
+			bw = new BufferedWriter(fw);
+			String file = f.getAbsolutePath() + "/data/trainning/" + doc_type + "/temp_listword.txt";
+
+			double[] tf;
+			double[] idf;
+			double[] weight;
+			List<String> documents = new ArrayList<String>();
+			int numberDocument = 0;
+			// Read and check the input from the text file
+			try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+				for (String line; (line = br.readLine()) != null;) {
+					// process the line.
+					documents.add(line);
+				}
+				// line is not visible here.
+			}
+			AtomicReference<String> String1;
+			AtomicReference<String> String2;
+			for (String doc : documents) {
+				if (doc != null) {
+					word = doc.split(" ");
+					tf = new double[word.length];
+					idf = new double[word.length];
+					weight = new double[word.length];
+					for (int x = 0; x < word.length; x++) {
+						tf[x] = countNumberEqual(word, word[x]);
+						int numDocumentContain = 0;
+						for (String temp_doc : documents) {
+							if (temp_doc.contains(word[x])) {
+								numDocumentContain++;
+							}
+						}
+						idf[x] = Math.log10(documents.size() / (numDocumentContain));
+						weight[x] = tf[x] * idf[x];
+					}
+					for (int i = 0; i < word.length - 1; i++)
+						for (int j = word.length - 1; j > i; j--)
+							if (weight[j] > weight[j - 1]) {
+								double temp = weight[j - 1];
+								weight[j - 1] = weight[j];
+								weight[j] = temp;
+								String1 = new AtomicReference<String>(word[j - 1]);
+								String2 = new AtomicReference<String>(word[j]);
+								String1.set(String2.getAndSet(String1.get()));
+								word[j - 1] = String1.get();
+								word[j] = String2.get();
+							}
+					for (int k = 0; k < 50; k++) {
+						bw.write(word[k] + " ");
+					}
+					bw.write("\n");
+				}
+			}
+			bw.close();
+		} catch (
+
+		IOException e) {
 			System.out.println("IOException Occured! ");
 			e.printStackTrace();
 			// System.exit(-1);
@@ -212,7 +338,7 @@ public class CreateData {
 	 *            get keyword of document type
 	 * @throws IOException
 	 */
-	public void getkeyword(String file_path, String doc_type) throws IOException {
+	public void getkeyword(String doc_type) throws IOException {
 		// Lưu cùng vị trí với file
 		List<String> doc_keyword = new ArrayList<String>();
 		FileWriter fw;
@@ -228,8 +354,8 @@ public class CreateData {
 				// process the line.
 				String[] listword = line.split(" ");
 				for (int x = 0; x < listword.length; x++) {
-					if (!doc_keyword.contains(word[x])) {
-						doc_keyword.add(word[x]);
+					if (!doc_keyword.contains(listword[x])) {
+						doc_keyword.add(listword[x]);
 					}
 				}
 
@@ -244,7 +370,7 @@ public class CreateData {
 
 	public void maketrainningkey() throws FileNotFoundException, IOException {
 		// Đọc 3 file mà tạo ra 1 file keyword chung
-		File tech_key = new File(f.getAbsolutePath() + "/data/trainning/tecnology/keyword.txt");
+		File tech_key = new File(f.getAbsolutePath() + "/data/trainning/technology/keyword.txt");
 		File edu_key = new File(f.getAbsolutePath() + "/data/trainning/education/keyword.txt");
 		File fash_key = new File(f.getAbsolutePath() + "/data/trainning/fashion/keyword.txt");
 		File all_key = new File(f.getAbsolutePath() + "/data/trainning/allkeyword.txt");
@@ -320,11 +446,16 @@ public class CreateData {
 		File fash_listword = new File(f.getAbsolutePath() + "/data/trainning/fashion/listword.txt");
 		File all_key = new File(f.getAbsolutePath() + "/data/trainning/allkeyword.txt");
 		File fknn_matrix = new File(f.getAbsolutePath() + "/data/trainning/knn_matrix.txt");
+		File fknn_label = new File(f.getAbsolutePath() + "/data/trainning/knn_label.txt");
 		FileWriter fw;
 		BufferedWriter bw;
 		fw = new FileWriter(fknn_matrix.getAbsoluteFile());
 		bw = new BufferedWriter(fw);
 
+		FileWriter fwl;
+		BufferedWriter bwl;
+		fwl = new FileWriter(fknn_label.getAbsoluteFile());
+		bwl = new BufferedWriter(fwl);
 		try (BufferedReader br = new BufferedReader(new FileReader(all_key.getAbsoluteFile()))) {
 			String line;
 			while ((line = br.readLine()) != null) {
@@ -337,10 +468,13 @@ public class CreateData {
 			}
 		}
 
-		knn_matrix = new int[300][all_keyword_size];
-		knn_label = new int[300];
-
-		for (int i = 0; i < 300; i++)
+		int knn_matrix[][] = new int[document_count][];
+		int knn_label[] = new int[document_count];
+		all_keyword_size = list_allkeyword.size();
+		for (int i = 0; i < document_count; i++) {
+			knn_matrix[i] = new int[all_keyword_size];
+		}
+		for (int i = 0; i < 90; i++)
 			for (int j = 0; j < all_keyword_size; j++) {
 				knn_matrix[i][j] = 0;
 			}
@@ -354,7 +488,7 @@ public class CreateData {
 				String[] listword = line.split(" ");
 				for (int x = 0; x < listword.length; x++) {
 					int index = list_allkeyword.indexOf(listword[x]);
-					if (index > 0) {
+					if (index != -1) {
 						knn_matrix[k][index] = 1;
 					}
 
@@ -367,13 +501,13 @@ public class CreateData {
 		try (BufferedReader br = new BufferedReader(new FileReader(edu_listword.getAbsoluteFile()))) {
 			String line;
 			// Vi tri dong
-			int k = 100;
+			int k = document_count / 3;
 			while ((line = br.readLine()) != null) {
 				// process the line.
 				String[] listword = line.split(" ");
 				for (int x = 0; x < listword.length; x++) {
 					int index = list_allkeyword.indexOf(listword[x]);
-					if (index > 0) {
+					if (index != -1) {
 						knn_matrix[k][index] = 1;
 					}
 
@@ -386,13 +520,13 @@ public class CreateData {
 		try (BufferedReader br = new BufferedReader(new FileReader(fash_listword.getAbsoluteFile()))) {
 			String line;
 			// Vi tri dong
-			int k = 200;
+			int k = 2 * document_count / 3;
 			while ((line = br.readLine()) != null) {
 				// process the line.
 				String[] listword = line.split(" ");
 				for (int x = 0; x < listword.length; x++) {
 					int index = list_allkeyword.indexOf(listword[x]);
-					if (index > 0) {
+					if (index != -1) {
 						knn_matrix[k][index] = 1;
 					}
 
@@ -401,14 +535,17 @@ public class CreateData {
 				k++;
 			}
 		}
-		for (int i = 0; i < 300; i++) {
+		for (int i = 0; i < document_count; i++) {
 			for (int j = 0; j < all_keyword_size; j++) {
-				bw.write(Integer.toString(knn_matrix[i][j]));
+				bw.write(Integer.toString(knn_matrix[i][j]) + " ");
 				if (j == all_keyword_size - 1)
 					bw.write("\n");
 			}
 		}
+		for (int i = 0; i < document_count; i++)
+			bwl.write(Integer.toString(knn_label[i]) + "\n");
 		bw.close();
+		bwl.close();
 	}
 
 	public void creatematrix_svm() throws IOException {
@@ -443,7 +580,6 @@ public class CreateData {
 		try (BufferedReader br = new BufferedReader(new FileReader(tech_listword.getAbsoluteFile()))) {
 			String line;
 			// Vi tri dong
-			int k = 0;
 			while ((line = br.readLine()) != null) {
 				// process the line.
 				String[] listword = line.split(" ");
@@ -461,7 +597,6 @@ public class CreateData {
 		try (BufferedReader br = new BufferedReader(new FileReader(edu_listword.getAbsoluteFile()))) {
 			String line;
 			// Vi tri dong
-			int k = 100;
 			while ((line = br.readLine()) != null) {
 				// process the line.
 				String[] listword = line.split(" ");
@@ -478,7 +613,6 @@ public class CreateData {
 		try (BufferedReader br = new BufferedReader(new FileReader(fash_listword.getAbsoluteFile()))) {
 			String line;
 			// Vi tri dong
-			int k = 200;
 			while ((line = br.readLine()) != null) {
 				// process the line.
 				String[] listword = line.split(" ");
@@ -496,10 +630,19 @@ public class CreateData {
 
 	}
 
-	public void createTrainingData() {
-		extractWord(tech_doc, "tecnology");
-		extractWord(edu_doc, "education");
-		extractWord(fash_doc, "fashion");
+	public void createTrainingData() throws IOException {
+		// extractWord(tech_doc, "technology");
+		// extractWord(edu_doc, "education");
+		// extractWord(fash_doc, "fashion");
+		// calcVSM("technology");
+		// calcVSM("education");
+		// calcVSM("fashion");
+		// getkeyword("technology");
+		// getkeyword("education");
+		// getkeyword("fashion");
+		// maketrainningkey();
+		// creatematrix_knn();
+		// creatematrix_svm();
 	}
 
 	/**
@@ -509,7 +652,8 @@ public class CreateData {
 	public static void main(String[] args) throws IOException {
 		CreateData credat = new CreateData();
 		credat.readFile();
-		credat.spellCheckandRepair();
+		// credat.spellCheckandRepair();
+		credat.createTrainingData();
 		// TODO Auto-generated method stub
 		// String vb = "Camera của Galaxy S7 là một trong vài camera trên điện
 		// thoại tốt nhất hiện nay. Công bằng mà nói thì SamSung cải tiến camera
