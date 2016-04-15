@@ -55,7 +55,7 @@ public class CreateData {
 
 	// int[] knn_label;
 
-	CreateData() throws IOException {
+	public CreateData() throws IOException {
 		f = new File(".");
 		detector = new SentenceDetector(
 				f.getAbsolutePath() + "/data/tools/NLPTools/models/sentDetection/VietnameseSD.bin.gz");
