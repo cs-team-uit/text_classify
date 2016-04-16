@@ -68,7 +68,7 @@ public class predictData {
 
 	}
 
-	public void readFile() {
+	private void readFile() {
 
 		File[] files;
 		// Read Technology Document
@@ -155,7 +155,7 @@ public class predictData {
 		return true;
 	}
 
-	public void extractWord(List<String> list_doc, String doc_type) {
+	private void extractWord(List<String> list_doc, String doc_type) {
 		try {
 			FileWriter fw;
 			BufferedWriter bw;
@@ -252,14 +252,14 @@ public class predictData {
 		b = temp;
 	}
 
-	public void swapString(String a, String b) {
+	private void swapString(String a, String b) {
 		AtomicReference<String> String1 = new AtomicReference<String>(a);
 		AtomicReference<String> String2 = new AtomicReference<String>(b);
 		String1.set(String2.getAndSet(String1.get()));
 
 	}
 
-	public void calcVSM(String doc_type) {
+	private void calcVSM(String doc_type) {
 		try {
 			FileWriter fw;
 			BufferedWriter bw;
@@ -330,7 +330,7 @@ public class predictData {
 		}
 	}
 
-	public void creatematrix_knn() throws FileNotFoundException, IOException {
+	private void creatematrix_knn() throws FileNotFoundException, IOException {
 		// Đọc lần lược 3 file list word
 		// Mỗi lần đọc một dòng thì so sánh với totaltrainningkey và tạo ra
 		// vector nhị phân
@@ -576,12 +576,12 @@ public class predictData {
 
 	}
 
-	public void convert_to_vector(List<String> list_doc, String doc_type) throws IOException {
+	private void convert_to_vector(List<String> list_doc, String doc_type) throws IOException {
 		extractWord(list_doc, doc_type);
 		calcVSM(doc_type);
 	}
 
-	public void knn_predict() throws FileNotFoundException, IOException {
+	private void knn_predict() throws FileNotFoundException, IOException {
 		// Đọc ma trận trong file và lưu vào mảng 2 chiều knn_matrix
 		// Đọc label trong file và ghi vào mảng label
 		// Khai báo class
@@ -702,7 +702,7 @@ public class predictData {
 	}
 
 	// KNN area
-	public void creatematrix_svm() throws IOException {
+	private void creatematrix_svm() throws IOException {
 		// Đọc lần lược 3 file list word
 		// Mỗi lần đọc một dòng thì so sánh với totaltrainningkey và tạo ra
 		// vector nhị phân
@@ -784,7 +784,7 @@ public class predictData {
 
 	}
 
-	public void svm_trainning() throws IOException {
+	private void svm_trainning() throws IOException {
 		// Check if model has created
 		creatematrix_svm();
 		// If not create yet
@@ -796,12 +796,82 @@ public class predictData {
 
 	}
 
-	public void svm_predict() throws IOException {
+	private void svm_predict() throws IOException {
 		String[] argv = new String[3];
 		argv[0] = "/data/testing/test_svm_matrix.txt";
 		argv[1] = "/data/testing/svm.model";
 		argv[2] = "/data/testing/svm_result.txt";
 		predictdata.svm_predict.svm_classify(argv);
+	}
+
+	private void lda_predict() throws Exception {
+		// Read all listword from trainning set and save it to variable
+		// Then add listword of testing set to the same variable
+		// Save it to new file and read it to precess LDA
+		// Add function check label of predict with correct label and print
+		// result
+		double alpha = 0.1D;
+		double beta = 0.01D;
+		int numTopics = 3;
+		int numIterations = 200;
+		int topWords = 20;
+		int savestep = 0;
+		String expName = "model";
+		String corpusPath = f.getAbsolutePath() + "/data/testing/lda_list.txt";
+		String tAssignsFilePath = "/data/testing/lda_result/";
+		models.GibbsSamplingLDA lda = new GibbsSamplingLDA(corpusPath, numTopics, alpha, beta, numIterations, topWords,
+				expName, tAssignsFilePath, savestep);
+		lda.inference();
+	}
+
+	private void lda_result() throws FileNotFoundException, IOException {
+		// BufferReader from line of testing set in file topAssigment
+		// Read label and compare with correct label
+		// Write the result
+		File ldaresult = new File(f.getAbsolutePath() + "/data/testing/test_svm_matrix.txt");
+		FileWriter fw;
+		BufferedWriter bw;
+		fw = new FileWriter(ldaresult.getAbsoluteFile());
+		bw = new BufferedWriter(fw);
+
+		File topassign = new File(f.getAbsolutePath() + "/data/testing/lda_result/model.topicAssignments");
+		int lineCount = 0;
+		int number_of_correct = 0;
+		try (BufferedReader br = new BufferedReader(new FileReader(topassign.getAbsoluteFile()))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				// process the line.
+				if (lineCount < 90)
+					lineCount++;
+				else {
+					String[] listword = line.split(" ");
+					for (int x = 0; x < listword.length; x++) {
+						// Save into array
+					}
+					// Check label of this line
+					// Compare with label[lineCount] and write to file like knn
+					String label = ""; // label = label of line
+					lineCount++;
+					if (lineCount == 1)
+						bw.write("TECHNOLOGY RESULT\n");
+					else if (lineCount == 31)
+						bw.write("EDUCATION RESULT\n");
+					else if (lineCount == 61)
+						bw.write("FASHTION RESULT\n");
+					bw.write("Document " + lineCount + ": Predict: " + label + " Correct: "
+							+ correct_label[lineCount - 1] + "\n");
+					if (label.equalsIgnoreCase(correct_label[lineCount - 1])) {
+						number_of_correct++;
+					}
+					if (lineCount == 30 || lineCount == 60 || lineCount == 90) {
+						bw.write("Final Result: " + number_of_correct + "/30 - Accuracy: "
+								+ number_of_correct * 100 / 30 + "%\n");
+						number_of_correct = 0;
+					}
+				}
+			}
+		}
+		bw.close();
 	}
 
 	public static void main(String[] args) throws FileNotFoundException, IOException {

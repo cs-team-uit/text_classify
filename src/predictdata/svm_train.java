@@ -130,14 +130,14 @@ class svm_train {
 
 		param = new svm_parameter();
 		// default values
-		param.svm_type = svm_parameter.C_SVC;
+		param.svm_type = svm_parameter.NU_SVC;
 		param.kernel_type = svm_parameter.RBF;
 		param.degree = 3;
 		param.gamma = 0; // 1/num_features
 		param.coef0 = 0;
 		param.nu = 0.5;
 		param.cache_size = 100;
-		param.C = 1;
+		param.C = 100;
 		param.eps = 1e-3;
 		param.p = 0.1;
 		param.shrinking = 1;

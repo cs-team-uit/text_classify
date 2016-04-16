@@ -2,11 +2,13 @@ package predictdata;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
@@ -33,8 +35,15 @@ class svm_predict {
 
 	private static svm_print_interface svm_print_string = svm_print_stdout;
 
-	static void info(String s) {
+	static void info(String s) throws IOException {
 		svm_print_string.print(s);
+		File result = new File(file.getAbsolutePath() + "/data/testing/svm_result_info.txt");
+		FileWriter fw;
+		BufferedWriter bw;
+		fw = new FileWriter(result.getAbsoluteFile());
+		bw = new BufferedWriter(fw);
+		bw.write(s);
+		bw.close();
 	}
 
 	private static double atof(String s) {
