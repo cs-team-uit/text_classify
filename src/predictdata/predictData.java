@@ -590,7 +590,8 @@ public class predictData {
 		// Predit từng file và so sánh kết quả với label chuẩn trong thư mục
 		// test
 		// Lưu lại kết quả trong file result
-		int k = 20; // number of negh
+		int k = 7; // number of negh
+		// spellcheck();
 		readFile();
 		convert_to_vector(tech_doc, "technology");
 		convert_to_vector(edu_doc, "education");
@@ -598,7 +599,7 @@ public class predictData {
 		creatematrix_knn();
 		parseData();
 		int number_of_correct = 0;
-		File fresult = new File(f.getAbsolutePath() + "/data/testing/result.txt");
+		File fresult = new File(f.getAbsolutePath() + "/data/testing/knn_result.txt");
 		FileWriter fw;
 		BufferedWriter bw;
 		fw = new FileWriter(fresult.getAbsoluteFile());
@@ -658,11 +659,10 @@ public class predictData {
 						+ correct_label[lineCount - 1] + "\n");
 				if (majClass.equalsIgnoreCase(correct_label[lineCount - 1])) {
 					number_of_correct++;
-					// Objects.equals(new String(majClass), new
-					// String(correct_label[lineCount - 1]));
 				}
 				if (lineCount == 30 || lineCount == 60 || lineCount == 90) {
-					bw.write(number_of_correct + "/30\n");
+					bw.write("Final Result: " + number_of_correct + "/30 - Accuracy: " + number_of_correct * 100 / 30
+							+ "%\n");
 					number_of_correct = 0;
 				}
 
@@ -702,28 +702,112 @@ public class predictData {
 	}
 
 	// KNN area
-	public void knnlda_predict() {
+	public void creatematrix_svm() throws IOException {
+		// Đọc lần lược 3 file list word
+		// Mỗi lần đọc một dòng thì so sánh với totaltrainningkey và tạo ra
+		// vector nhị phân
+		// Đồng thời, ghi lại label của vector đó ở 1 file khác
+		// và ghi ra 1 file vừa label vừa vector cho svm
+		//
+		List<String> list_allkeyword = new ArrayList<String>();
+		File tech_listword = new File(f.getAbsolutePath() + "/data/testing/technology/listword.txt");
+		File edu_listword = new File(f.getAbsolutePath() + "/data/testing/education/listword.txt");
+		File fash_listword = new File(f.getAbsolutePath() + "/data/testing/fashion/listword.txt");
+		File all_key = new File(f.getAbsolutePath() + "/data/trainning/allkeyword.txt");
+		File fsvm_matrix = new File(f.getAbsolutePath() + "/data/testing/test_svm_matrix.txt");
+		FileWriter fw;
+		BufferedWriter bw;
+		fw = new FileWriter(fsvm_matrix.getAbsoluteFile());
+		bw = new BufferedWriter(fw);
+
+		try (BufferedReader br = new BufferedReader(new FileReader(all_key.getAbsoluteFile()))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				// process the line.
+				String[] listword = line.split(" ");
+				for (int x = 0; x < listword.length; x++) {
+					list_allkeyword.add(listword[x]);
+				}
+
+			}
+		}
+		try (BufferedReader br = new BufferedReader(new FileReader(tech_listword.getAbsoluteFile()))) {
+			String line;
+			// Vi tri dong
+			while ((line = br.readLine()) != null) {
+				// process the line.
+				String[] listword = line.split(" ");
+				bw.write("1 ");
+				for (int x = 0; x < listword.length; x++) {
+					int index = list_allkeyword.indexOf(listword[x]);
+					if (index > 0) {
+						bw.write(index + ":1 ");
+					}
+				}
+				bw.write("\n");
+
+			}
+		}
+		try (BufferedReader br = new BufferedReader(new FileReader(edu_listword.getAbsoluteFile()))) {
+			String line;
+			// Vi tri dong
+			while ((line = br.readLine()) != null) {
+				// process the line.
+				String[] listword = line.split(" ");
+				bw.write("2 ");
+				for (int x = 0; x < listword.length; x++) {
+					int index = list_allkeyword.indexOf(listword[x]);
+					if (index > 0) {
+						bw.write(index + ":1 ");
+					}
+				}
+				bw.write("\n");
+			}
+		}
+		try (BufferedReader br = new BufferedReader(new FileReader(fash_listword.getAbsoluteFile()))) {
+			String line;
+			// Vi tri dong
+			while ((line = br.readLine()) != null) {
+				// process the line.
+				String[] listword = line.split(" ");
+				bw.write("3 ");
+				for (int x = 0; x < listword.length; x++) {
+					int index = list_allkeyword.indexOf(listword[x]);
+					if (index > 0) {
+						bw.write(index + ":1 ");
+					}
+				}
+				bw.write("\n");
+			}
+		}
+		bw.close();
 
 	}
 
-	public void svm_trainning() {
+	public void svm_trainning() throws IOException {
+		// Check if model has created
+		creatematrix_svm();
+		// If not create yet
+		String[] argv = new String[3];
+		// argv[0] = "-t 2 -c 100 -s 1 -d 7 -g 4 -r 2";
+		argv[0] = "/data/trainning/svm_matrix.txt";
+		argv[1] = "/data/testing/svm.model";
+		predictdata.svm_train.svm_learn(argv);
 
 	}
 
-	public void svm_predict() {
-
-	}
-
-	public void svmlda_trainning() {
-
-	}
-
-	public void svmlda_predict() {
-
+	public void svm_predict() throws IOException {
+		String[] argv = new String[3];
+		argv[0] = "/data/testing/test_svm_matrix.txt";
+		argv[1] = "/data/testing/svm.model";
+		argv[2] = "/data/testing/svm_result.txt";
+		predictdata.svm_predict.svm_classify(argv);
 	}
 
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 		predictData pd = new predictData();
-		pd.knn_predict();
+		// pd.knn_predict();
+		pd.svm_trainning();
+		pd.svm_predict();
 	}
 }
