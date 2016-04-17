@@ -117,7 +117,6 @@ public class spellchecker {
 				fw = new FileWriter(temp.getAbsoluteFile());
 				bw = new BufferedWriter(fw);
 				// Read and check the input from the text file
-				BufferedReader inputFile = new BufferedReader(new FileReader(file));
 				System.out.println("Reading from " + file);
 				// Read all text and split sentence then save to array
 				InputStream is = null;
@@ -177,7 +176,7 @@ public class spellchecker {
 				if (orifile.exists())
 					orifile.delete();
 				// Rename file (or directory)
-				boolean success = temp.renameTo(orifile);
+				temp.renameTo(orifile);
 			}
 		} catch (IOException e) {
 			System.out.println("IOException Occured! ");

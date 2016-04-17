@@ -30,7 +30,7 @@ public class CreateData {
 	private List<String> tech_doc = new ArrayList<String>();
 	private List<String> edu_doc = new ArrayList<String>();
 	private List<String> fash_doc = new ArrayList<String>();
-	int document_count = 90;
+	int document_count = 360;
 	public File f;
 	public spellchecker sc;
 	SentenceDetector detector;
@@ -44,7 +44,6 @@ public class CreateData {
 	String[] wordtagger = new String[sentence.length];
 	// Store in array
 	String[] word = new String[256];
-	String[] select_temp_tagger = new String[256];
 
 	String[] type_tagger = new String[10];
 
@@ -142,8 +141,9 @@ public class CreateData {
 		type_tagger[1] = "/Nc";
 		type_tagger[2] = "/Nu";
 		type_tagger[3] = "/Ny";
-		type_tagger[4] = "/N";
-		type_tagger[5] = "/V";
+		type_tagger[4] = "/Nb";
+		type_tagger[5] = "/N";
+		type_tagger[6] = "/V";
 	}
 
 	public boolean isAlpha(String name) {
@@ -158,26 +158,80 @@ public class CreateData {
 		return true;
 	}
 
-	public void extractWord(List<String> list_doc, String doc_type) {
+	public void extractWord(List<String> list_doc, String doc_type) throws FileNotFoundException, IOException {
 		try {
 			FileWriter fw;
-			BufferedWriter bw;
-			set_typetagger();
-
+			BufferedWriter bw = null;
 			File temp = new File(f.getAbsolutePath() + "/data/trainning/" + doc_type + "/temp_listword.txt");
 			fw = new FileWriter(temp.getAbsoluteFile());
 			bw = new BufferedWriter(fw);
+			FileWriter fwl;
+			BufferedWriter bwl = null;
+			set_typetagger();
+
 			for (Iterator<String> i = list_doc.iterator(); i.hasNext();) {
 				// Get file dir
 				temp_wordoffile.clear();
 				wordoffile.clear();
+
 				String file = i.next();
-				// Read and check the input from the text file
-				System.out.println("Reading from " + file);
+				for (int time_run = 0; time_run < 1; time_run++) {
+					File preprocessing = new File(file + "-t.raw");
+					fwl = new FileWriter(preprocessing.getAbsoluteFile());
+					bwl = new BufferedWriter(fwl);
+					File orifile = new File(file); // dung de doc va doi ten
+					// Read and check the input from the text file
+					System.out.println("Reading from " + file);
+					try (BufferedReader br = new BufferedReader(new FileReader(orifile.getAbsoluteFile()))) {
+						String line;
+						while ((line = br.readLine()) != null) {
+							// process the line.
+							String[] listword = line.split(" ");
+							for (int x = 0; x < listword.length; x++) {
+								if (listword[x].contains(".")) {
+									if (listword[x].indexOf(".") + 1 == listword[x].length()) {
+										bwl.write(listword[x] + " ");
+										continue;
+									}
+
+									String a_letter = Character
+											.toString(listword[x].charAt(listword[x].indexOf(".") + 1));
+									if (!a_letter.equals(" ")) {
+										StringBuilder str = new StringBuilder(listword[x]);
+										str.insert(listword[x].indexOf(".") + 1, ' ');
+										bwl.write(str.toString() + " ");
+									}
+								} else if (listword[x].contains(",")) {
+									if (listword[x].indexOf(",") + 1 == listword[x].length()) {
+										bwl.write(listword[x] + " ");
+										continue;
+									}
+									String a_letter = Character
+											.toString(listword[x].charAt(listword[x].indexOf(",") + 1));
+									if (!a_letter.equals(" ")) {
+										StringBuilder str = new StringBuilder(listword[x]);
+										str.insert(listword[x].indexOf(",") + 1, ' ');
+										bwl.write(str.toString() + " ");
+									}
+								} else
+									bwl.write(listword[x] + " ");
+							}
+
+						}
+					}
+					bwl.close();
+					if (orifile.exists())
+						orifile.delete();
+
+					// Rename file (or directory)
+					preprocessing.renameTo(orifile);
+				}
 				// Read all text and split sentence then save to array
 				InputStream is = null;
 				is = new FileInputStream(file);
 				sentence = sentSlipt(readStream(is));
+				wordtagger = new String[sentence.length];
+				wordsplit = new String[sentence.length];
 				for (int j = 0; j < sentence.length; j++) {
 					wordsplit[j] = wordslipt(sentence[j]);
 					wordtagger[j] = tagger(wordsplit[j]);
@@ -187,7 +241,8 @@ public class CreateData {
 					// Store every word splited to array
 					if (wtag != null) {
 						word = wtag.split(" ");
-						boolean isChoose = false; // Xac nhan word da dc xet va
+						boolean isChoose = false; // Xac nhan word da dc xet
+													// va
 													// dc
 													// chon
 						for (int x = 0; x < word.length; x++) {
@@ -195,10 +250,12 @@ public class CreateData {
 							for (String typtag : type_tagger) {
 								// Type filter
 								if (typtag != null) {
-
+									if (word[x].contains(" ")) {
+										word[x].replace(" ", "");
+									}
 									if (word[x].indexOf(typtag) > 0 && word[x].indexOf("&") < 0
 											&& word[x].indexOf("+") < 0 && word[x].indexOf("\"") < 0
-											&& word[x].length() > 1) {
+											&& word[x].length() > 3) {
 										word[x] = word[x].replace(typtag, "");
 										word[x] = word[x].toLowerCase();
 										isChoose = true;
@@ -207,7 +264,8 @@ public class CreateData {
 								} else
 									break;
 							}
-							// If chua co trong csdl, them vao , nguoc lai bo
+							// If chua co trong csdl, them vao , nguoc lai
+							// bo
 							// qua
 							if (!temp_wordoffile.contains(word[x])) {
 								if (isChoose == true) {
@@ -221,6 +279,7 @@ public class CreateData {
 						}
 
 					}
+
 				}
 				Collections.sort(temp_wordoffile);
 				for (int k = 0; k < temp_wordoffile.size(); k++) {
@@ -316,7 +375,7 @@ public class CreateData {
 								word[j - 1] = String1.get();
 								word[j] = String2.get();
 							}
-					for (int k = 0; k < 100; k++) {
+					for (int k = 0; k < 50; k++) {
 						bw.write(word[k] + " ");
 					}
 					bw.write("\n");
@@ -473,7 +532,7 @@ public class CreateData {
 		for (int i = 0; i < document_count; i++) {
 			knn_matrix[i] = new int[all_keyword_size];
 		}
-		for (int i = 0; i < 90; i++)
+		for (int i = 0; i < document_count; i++)
 			for (int j = 0; j < all_keyword_size; j++) {
 				knn_matrix[i][j] = 0;
 			}
@@ -630,18 +689,18 @@ public class CreateData {
 	}
 
 	public void createTrainingData() throws IOException {
-		extractWord(tech_doc, "technology");
-		extractWord(edu_doc, "education");
-		extractWord(fash_doc, "fashion");
-		calcVSM("technology");
-		calcVSM("education");
-		calcVSM("fashion");
-		getkeyword("technology");
-		getkeyword("education");
-		getkeyword("fashion");
-		maketrainningkey();
-		creatematrix_knn();
-		creatematrix_svm();
+		// extractWord(tech_doc, "technology");
+		// extractWord(edu_doc, "education");
+		// extractWord(fash_doc, "fashion");
+		// calcVSM("technology");
+		// calcVSM("education");
+		// calcVSM("fashion");
+		// getkeyword("technology");
+		// getkeyword("education");
+		// getkeyword("fashion");
+		// maketrainningkey();
+		// creatematrix_knn();
+		// creatematrix_svm();
 	}
 
 	/**

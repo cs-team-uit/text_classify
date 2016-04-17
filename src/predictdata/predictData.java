@@ -33,7 +33,8 @@ public class predictData {
 	private String[] label;
 	private String[] correct_label;
 	File f = new File(".");
-	private int document_count = 90;
+	private int document_count = 360;
+	private int test_document_count = 84;
 	public int all_keyword_size;
 	public static final String TECH_DOC_PATH = "/data/documents/test_data/technology/";
 	public static final String EDU_DOC_PATH = "/data/documents/test_data/education/";
@@ -161,20 +162,70 @@ public class predictData {
 			BufferedWriter bw;
 			set_typetagger();
 
+			FileWriter fwl;
+			BufferedWriter bwl;
 			File temp = new File(f.getAbsolutePath() + "/data/testing/" + doc_type + "/temp_listword.txt");
 			fw = new FileWriter(temp.getAbsoluteFile());
 			bw = new BufferedWriter(fw);
+
 			for (Iterator<String> i = list_doc.iterator(); i.hasNext();) {
 				// Get file dir
 				temp_wordoffile.clear();
 				wordoffile.clear();
 				String file = i.next();
+				for (int time_run = 0; time_run < 2; time_run++) {
+					File preprocessing = new File(file + "-t.raw");
+					fwl = new FileWriter(preprocessing.getAbsoluteFile());
+					bwl = new BufferedWriter(fwl);
+					File orifile = new File(file); // dung de doc va doi ten
+					// Read and check the input from the text file
+					System.out.println("Reading from " + file);
+					try (BufferedReader br = new BufferedReader(new FileReader(orifile.getAbsoluteFile()))) {
+						String line;
+						while ((line = br.readLine()) != null) {
+							// process the line.
+							String[] listword = line.split(" ");
+							for (int x = 0; x < listword.length; x++) {
+								if (listword[x].contains(".")) {
+									if (listword[x].indexOf(".") + 1 == listword[x].length())
+										continue;
+									String a_letter = Character
+											.toString(listword[x].charAt(listword[x].indexOf(".") + 1));
+									if (!a_letter.equals(" ")) {
+										StringBuilder str = new StringBuilder(listword[x]);
+										str.insert(listword[x].indexOf(".") + 1, ' ');
+										bwl.write(str.toString() + " ");
+									}
+								} else if (listword[x].contains(",")) {
+									if (listword[x].indexOf(",") + 1 == listword[x].length())
+										continue;
+									String a_letter = Character
+											.toString(listword[x].charAt(listword[x].indexOf(",") + 1));
+									if (!a_letter.equals(" ")) {
+										StringBuilder str = new StringBuilder(listword[x]);
+										str.insert(listword[x].indexOf(",") + 1, ' ');
+										bwl.write(str.toString() + " ");
+									}
+								} else
+									bwl.write(listword[x] + " ");
+							}
+
+						}
+					}
+					bwl.close();
+					if (orifile.exists())
+						orifile.delete();
+					// Rename file (or directory)
+					preprocessing.renameTo(orifile);
+				}
 				// Read and check the input from the text file
 				System.out.println("Reading from " + file);
 				// Read all text and split sentence then save to array
 				InputStream is = null;
 				is = new FileInputStream(file);
 				sentence = sentSlipt(readStream(is));
+				wordtagger = new String[sentence.length];
+				wordsplit = new String[sentence.length];
 				for (int j = 0; j < sentence.length; j++) {
 					wordsplit[j] = wordslipt(sentence[j]);
 					wordtagger[j] = tagger(wordsplit[j]);
@@ -184,7 +235,8 @@ public class predictData {
 					// Store every word splited to array
 					if (wtag != null) {
 						word = wtag.split(" ");
-						boolean isChoose = false; // Xac nhan word da dc xet va
+						boolean isChoose = false; // Xac nhan word da dc xet
+													// va
 													// dc
 													// chon
 						for (int x = 0; x < word.length; x++) {
@@ -192,7 +244,9 @@ public class predictData {
 							for (String typtag : type_tagger) {
 								// Type filter
 								if (typtag != null) {
-
+									if (word[x].contains(" ")) {
+										word[x].replace(" ", "");
+									}
 									if (word[x].indexOf(typtag) > 0 && word[x].indexOf("&") < 0
 											&& word[x].indexOf("+") < 0 && word[x].indexOf("\"") < 0
 											&& word[x].length() > 1) {
@@ -204,7 +258,8 @@ public class predictData {
 								} else
 									break;
 							}
-							// If chua co trong csdl, them vao , nguoc lai bo
+							// If chua co trong csdl, them vao , nguoc lai
+							// bo
 							// qua
 							if (!temp_wordoffile.contains(word[x])) {
 								if (isChoose == true) {
@@ -226,6 +281,7 @@ public class predictData {
 				bw.write("\n");
 
 			}
+
 			bw.close();
 		} catch (
 
@@ -306,7 +362,7 @@ public class predictData {
 								word[j - 1] = String1.get();
 								word[j] = String2.get();
 							}
-					for (int k = 0; k < 100; k++) {
+					for (int k = 0; k < 50; k++) {
 						bw.write(word[k] + " ");
 					}
 					bw.write("\n");
@@ -362,13 +418,13 @@ public class predictData {
 			}
 		}
 
-		int knn_matrix[][] = new int[document_count][];
-		int knn_label[] = new int[document_count];
+		int knn_matrix[][] = new int[test_document_count][];
+		int knn_label[] = new int[test_document_count];
 		all_keyword_size = list_allkeyword.size();
-		for (int i = 0; i < document_count; i++) {
+		for (int i = 0; i < test_document_count; i++) {
 			knn_matrix[i] = new int[all_keyword_size];
 		}
-		for (int i = 0; i < 90; i++)
+		for (int i = 0; i < test_document_count; i++)
 			for (int j = 0; j < all_keyword_size; j++) {
 				knn_matrix[i][j] = 0;
 			}
@@ -395,7 +451,7 @@ public class predictData {
 		try (BufferedReader br = new BufferedReader(new FileReader(edu_listword.getAbsoluteFile()))) {
 			String line;
 			// Vi tri dong
-			int k = document_count / 3;
+			int k = test_document_count / 3;
 			while ((line = br.readLine()) != null) {
 				// process the line.
 				String[] listword = line.split(" ");
@@ -414,7 +470,7 @@ public class predictData {
 		try (BufferedReader br = new BufferedReader(new FileReader(fash_listword.getAbsoluteFile()))) {
 			String line;
 			// Vi tri dong
-			int k = 2 * document_count / 3;
+			int k = 2 * test_document_count / 3;
 			while ((line = br.readLine()) != null) {
 				// process the line.
 				String[] listword = line.split(" ");
@@ -429,14 +485,14 @@ public class predictData {
 				k++;
 			}
 		}
-		for (int i = 0; i < document_count; i++) {
+		for (int i = 0; i < test_document_count; i++) {
 			for (int j = 0; j < all_keyword_size; j++) {
 				bw.write(Integer.toString(knn_matrix[i][j]) + " ");
 				if (j == all_keyword_size - 1)
 					bw.write("\n");
 			}
 		}
-		for (int i = 0; i < document_count; i++)
+		for (int i = 0; i < test_document_count; i++)
 			bwl.write(Integer.toString(knn_label[i]) + "\n");
 		bw.close();
 		bwl.close();
@@ -456,7 +512,7 @@ public class predictData {
 				instances[i][j] = 0;
 			}
 		label = new String[document_count];
-		correct_label = new String[document_count];
+		correct_label = new String[test_document_count];
 		try (BufferedReader br = new BufferedReader(new FileReader(fmatrixData.getAbsoluteFile()))) {
 			String line;
 			while ((line = br.readLine()) != null) {
@@ -582,7 +638,7 @@ public class predictData {
 		// Predit từng file và so sánh kết quả với label chuẩn trong thư mục
 		// test
 		// Lưu lại kết quả trong file result
-		int k = 7; // number of negh
+		int k = 20; // number of negh
 		// spellcheck();
 
 		creatematrix_knn();
@@ -603,12 +659,13 @@ public class predictData {
 		File ftestmatrix = new File(f.getAbsolutePath() + "/data/testing/test_knn_matrix.txt");
 		try (BufferedReader br = new BufferedReader(new FileReader(ftestmatrix.getAbsoluteFile()))) {
 			String line;
+			double[][] query = new double[test_document_count][];
+			for (int i = 0; i < test_document_count; i++) {
+				query[i] = new double[all_keyword_size];
+			}
 			// Vi tri dong
 			while ((line = br.readLine()) != null) {
-				double[][] query = new double[90][];
-				for (int i = 0; i < 90; i++) {
-					query[i] = new double[all_keyword_size];
-				}
+
 				// process the line.
 				String[] listword = line.split(" ");
 				for (int i = 0; i < all_keyword_size; i++)
@@ -640,17 +697,17 @@ public class predictData {
 				System.out.println("Class of new instance is: " + majClass);
 				if (lineCount == 1)
 					bw.write("TECHNOLOGY RESULT\n");
-				else if (lineCount == 31)
+				else if (lineCount == 29)
 					bw.write("EDUCATION RESULT\n");
-				else if (lineCount == 61)
+				else if (lineCount == 85)
 					bw.write("FASHTION RESULT\n");
 				bw.write("Document " + lineCount + ": Predict: " + majClass + " Correct: "
 						+ correct_label[lineCount - 1] + "\n");
 				if (majClass.equalsIgnoreCase(correct_label[lineCount - 1])) {
 					number_of_correct++;
 				}
-				if (lineCount == 30 || lineCount == 60 || lineCount == 90) {
-					bw.write("Final Result: " + number_of_correct + "/30 - Accuracy: " + number_of_correct * 100 / 30
+				if (lineCount == 28 || lineCount == 56 || lineCount == 84) {
+					bw.write("Final Result: " + number_of_correct + "/28 - Accuracy: " + number_of_correct * 100 / 28
 							+ "%\n");
 					number_of_correct = 0;
 				}
@@ -873,7 +930,7 @@ public class predictData {
 	public void FpredictData() throws FileNotFoundException, IOException {
 		predictData pd = new predictData();
 		// pd.spellcheck();
-		pd.prepareData();
+		// pd.prepareData();
 		pd.knn_predict();
 		pd.svm_trainning();
 		pd.svm_predict();

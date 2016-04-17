@@ -10,8 +10,8 @@ public class Document_Classification {
 	private CreateData cd;
 
 	public Document_Classification() throws IOException {
-		pd = new predictData();
 		cd = new CreateData();
+		pd = new predictData();
 	}
 
 	public static void main(String[] args) throws IOException {
