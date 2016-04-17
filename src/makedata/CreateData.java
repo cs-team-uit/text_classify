@@ -223,7 +223,7 @@ public class CreateData {
 					}
 				}
 				Collections.sort(temp_wordoffile);
-				for (int k = 0; k < 100; k++) {
+				for (int k = 0; k < temp_wordoffile.size(); k++) {
 					bw.write(temp_wordoffile.get(k) + " ");
 				}
 				bw.write("\n");
@@ -277,7 +277,6 @@ public class CreateData {
 			double[] idf;
 			double[] weight;
 			List<String> documents = new ArrayList<String>();
-			int numberDocument = 0;
 			// Read and check the input from the text file
 			try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 				for (String line; (line = br.readLine()) != null;) {
@@ -317,7 +316,7 @@ public class CreateData {
 								word[j - 1] = String1.get();
 								word[j] = String2.get();
 							}
-					for (int k = 0; k < 50; k++) {
+					for (int k = 0; k < 100; k++) {
 						bw.write(word[k] + " ");
 					}
 					bw.write("\n");
@@ -631,48 +630,29 @@ public class CreateData {
 	}
 
 	public void createTrainingData() throws IOException {
-		// extractWord(tech_doc, "technology");
-		// extractWord(edu_doc, "education");
-		// extractWord(fash_doc, "fashion");
-		// calcVSM("technology");
-		// calcVSM("education");
-		// calcVSM("fashion");
-		// getkeyword("technology");
-		// getkeyword("education");
-		// getkeyword("fashion");
-		// maketrainningkey();
-		// creatematrix_knn();
-		// creatematrix_svm();
+		extractWord(tech_doc, "technology");
+		extractWord(edu_doc, "education");
+		extractWord(fash_doc, "fashion");
+		calcVSM("technology");
+		calcVSM("education");
+		calcVSM("fashion");
+		getkeyword("technology");
+		getkeyword("education");
+		getkeyword("fashion");
+		maketrainningkey();
+		creatematrix_knn();
+		creatematrix_svm();
 	}
 
 	/**
 	 * @param args
 	 * @throws IOException
 	 */
-	public static void main(String[] args) throws IOException {
+	public void FcreateData() throws IOException {
 		CreateData credat = new CreateData();
 		credat.readFile();
 		// credat.spellCheckandRepair();
 		credat.createTrainingData();
-		// TODO Auto-generated method stub
-		// String vb = "Camera của Galaxy S7 là một trong vài camera trên điện
-		// thoại tốt nhất hiện nay. Công bằng mà nói thì SamSung cải tiến camera
-		// trên điện thoại rõ nhất bắt đầu từ chiếc Note 5, và có thay đổi rất
-		// nhiều về tư duy màu sắc từ chiếc Galaxy S6. Đó là bộ xử lý hình
-		// sau.";
-		//
-		// String cau[] = credat.sentSlipt(vb);
-		// String[] tachtu = new String[cau.length];
-		//
-		// for (int i = 0; i < cau.length; i++) {
-		// tachtu[i] = credat.wordslipt(cau[i]);
-		// }
-		//
-		// for (int i = 0; i < cau.length; i++) {
-		// System.out.println(cau[i]);
-		// System.out.println(tachtu[i]);
-		// }
-		// System.out.println(tachtu[1]);
 	}
 
 }

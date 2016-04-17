@@ -37,7 +37,7 @@ class svm_predict {
 
 	static void info(String s) throws IOException {
 		svm_print_string.print(s);
-		File result = new File(file.getAbsolutePath() + "/data/testing/svm_result_info.txt");
+		File result = new File(file.getAbsolutePath() + "/data/testing/result/svm_result_info.txt");
 		FileWriter fw;
 		BufferedWriter bw;
 		fw = new FileWriter(result.getAbsoluteFile());

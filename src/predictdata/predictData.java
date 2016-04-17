@@ -59,7 +59,7 @@ public class predictData {
 	List<String> temp_wordoffile = new ArrayList<String>();
 	List<String> wordoffile = new ArrayList<String>();
 
-	predictData() throws IOException {
+	public predictData() throws IOException {
 		f = new File(".");
 		detector = new SentenceDetector(
 				f.getAbsolutePath() + "/data/tools/NLPTools/models/sentDetection/VietnameseSD.bin.gz");
@@ -220,7 +220,7 @@ public class predictData {
 					}
 				}
 				Collections.sort(temp_wordoffile);
-				for (int k = 0; k < 100; k++) {
+				for (int k = 0; k < temp_wordoffile.size(); k++) {
 					bw.write(temp_wordoffile.get(k) + " ");
 				}
 				bw.write("\n");
@@ -252,13 +252,6 @@ public class predictData {
 		b = temp;
 	}
 
-	private void swapString(String a, String b) {
-		AtomicReference<String> String1 = new AtomicReference<String>(a);
-		AtomicReference<String> String2 = new AtomicReference<String>(b);
-		String1.set(String2.getAndSet(String1.get()));
-
-	}
-
 	private void calcVSM(String doc_type) {
 		try {
 			FileWriter fw;
@@ -274,7 +267,6 @@ public class predictData {
 			double[] idf;
 			double[] weight;
 			List<String> documents = new ArrayList<String>();
-			int numberDocument = 0;
 			// Read and check the input from the text file
 			try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 				for (String line; (line = br.readLine()) != null;) {
@@ -314,7 +306,7 @@ public class predictData {
 								word[j - 1] = String1.get();
 								word[j] = String2.get();
 							}
-					for (int k = 0; k < 50; k++) {
+					for (int k = 0; k < 100; k++) {
 						bw.write(word[k] + " ");
 					}
 					bw.write("\n");
@@ -592,14 +584,11 @@ public class predictData {
 		// Lưu lại kết quả trong file result
 		int k = 7; // number of negh
 		// spellcheck();
-		readFile();
-		convert_to_vector(tech_doc, "technology");
-		convert_to_vector(edu_doc, "education");
-		convert_to_vector(fash_doc, "fashion");
+
 		creatematrix_knn();
 		parseData();
 		int number_of_correct = 0;
-		File fresult = new File(f.getAbsolutePath() + "/data/testing/knn_result.txt");
+		File fresult = new File(f.getAbsolutePath() + "/data/testing/result/knn_result.txt");
 		FileWriter fw;
 		BufferedWriter bw;
 		fw = new FileWriter(fresult.getAbsoluteFile());
@@ -800,7 +789,7 @@ public class predictData {
 		String[] argv = new String[3];
 		argv[0] = "/data/testing/test_svm_matrix.txt";
 		argv[1] = "/data/testing/svm.model";
-		argv[2] = "/data/testing/svm_result.txt";
+		argv[2] = "/data/testing/result/svm_result.txt";
 		predictdata.svm_predict.svm_classify(argv);
 	}
 
@@ -874,9 +863,18 @@ public class predictData {
 		bw.close();
 	}
 
-	public static void main(String[] args) throws FileNotFoundException, IOException {
+	private void prepareData() throws FileNotFoundException, IOException {
+		readFile();
+		convert_to_vector(tech_doc, "technology");
+		convert_to_vector(edu_doc, "education");
+		convert_to_vector(fash_doc, "fashion");
+	}
+
+	public void FpredictData() throws FileNotFoundException, IOException {
 		predictData pd = new predictData();
-		// pd.knn_predict();
+		// pd.spellcheck();
+		pd.prepareData();
+		pd.knn_predict();
 		pd.svm_trainning();
 		pd.svm_predict();
 	}
