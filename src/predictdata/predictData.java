@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import jvntagger.MaxentTagger;
+import makedata.spellchecker;
 import models.GibbsSamplingLDA;
 import vn.hus.nlp.sd.SentenceDetector;
 import vn.hus.nlp.tokenizer.VietTokenizer;
@@ -32,6 +33,7 @@ public class predictData {
 	private double[][] instances;
 	private String[] label;
 	private String[] correct_label;
+	public spellchecker sc;
 	File f = new File(".");
 	private int document_count = 360;
 	private int test_document_count = 84;
@@ -218,6 +220,7 @@ public class predictData {
 					// Rename file (or directory)
 					preprocessing.renameTo(orifile);
 				}
+				sc.doCheck(file);
 				// Read and check the input from the text file
 				System.out.println("Reading from " + file);
 				// Read all text and split sentence then save to array
@@ -362,7 +365,7 @@ public class predictData {
 								word[j - 1] = String1.get();
 								word[j] = String2.get();
 							}
-					for (int k = 0; k < 50; k++) {
+					for (int k = 0; k < 40; k++) {
 						bw.write(word[k] + " ");
 					}
 					bw.write("\n");
@@ -697,18 +700,19 @@ public class predictData {
 				System.out.println("Class of new instance is: " + majClass);
 				if (lineCount == 1)
 					bw.write("TECHNOLOGY RESULT\n");
-				else if (lineCount == 29)
+				else if (lineCount == test_document_count / 3 + 1)
 					bw.write("EDUCATION RESULT\n");
-				else if (lineCount == 85)
+				else if (lineCount == 2 * test_document_count / 3 + 1)
 					bw.write("FASHTION RESULT\n");
 				bw.write("Document " + lineCount + ": Predict: " + majClass + " Correct: "
 						+ correct_label[lineCount - 1] + "\n");
 				if (majClass.equalsIgnoreCase(correct_label[lineCount - 1])) {
 					number_of_correct++;
 				}
-				if (lineCount == 28 || lineCount == 56 || lineCount == 84) {
-					bw.write("Final Result: " + number_of_correct + "/28 - Accuracy: " + number_of_correct * 100 / 28
-							+ "%\n");
+				if (lineCount == test_document_count / 3 || lineCount == 2 * test_document_count / 3
+						|| lineCount == test_document_count) {
+					bw.write("Final Result: " + number_of_correct + "/" + test_document_count / 3 + " - Accuracy: "
+							+ number_of_correct * 100 / test_document_count + "%\n");
 					number_of_correct = 0;
 				}
 
@@ -856,6 +860,74 @@ public class predictData {
 		// Save it to new file and read it to precess LDA
 		// Add function check label of predict with correct label and print
 		// result
+		List<String> ldalist = new ArrayList<String>();
+		File train_tech_listword = new File(f.getAbsolutePath() + "/data/trainning/technology/listword.txt");
+		File train_edu_listword = new File(f.getAbsolutePath() + "/data/trainning/education/listword.txt");
+		File train_fash_listword = new File(f.getAbsolutePath() + "/data/trainning/fashion/listword.txt");
+		try (BufferedReader br = new BufferedReader(new FileReader(train_tech_listword.getAbsoluteFile()))) {
+			String line;
+			// Vi tri dong
+			while ((line = br.readLine()) != null) {
+				// process the line.
+				ldalist.add(line);
+
+			}
+		}
+		try (BufferedReader br = new BufferedReader(new FileReader(train_edu_listword.getAbsoluteFile()))) {
+			String line;
+			// Vi tri dong
+			while ((line = br.readLine()) != null) {
+				// process the line.
+				String[] listword = line.split(" ");
+				ldalist.add(line);
+			}
+		}
+		try (BufferedReader br = new BufferedReader(new FileReader(train_fash_listword.getAbsoluteFile()))) {
+			String line;
+			// Vi tri dong
+			while ((line = br.readLine()) != null) {
+				// process the line.
+				ldalist.add(line);
+			}
+		}
+		File test_tech_listword = new File(f.getAbsolutePath() + "/data/testing/technology/listword.txt");
+		File test_edu_listword = new File(f.getAbsolutePath() + "/data/testing/education/listword.txt");
+		File test_fash_listword = new File(f.getAbsolutePath() + "/data/testing/fashion/listword.txt");
+		try (BufferedReader br = new BufferedReader(new FileReader(test_tech_listword.getAbsoluteFile()))) {
+			String line;
+			// Vi tri dong
+			while ((line = br.readLine()) != null) {
+				// process the line.
+				ldalist.add(line);
+
+			}
+		}
+		try (BufferedReader br = new BufferedReader(new FileReader(test_edu_listword.getAbsoluteFile()))) {
+			String line;
+			// Vi tri dong
+			while ((line = br.readLine()) != null) {
+				// process the line.
+				ldalist.add(line);
+			}
+		}
+		try (BufferedReader br = new BufferedReader(new FileReader(test_fash_listword.getAbsoluteFile()))) {
+			String line;
+			// Vi tri dong
+			while ((line = br.readLine()) != null) {
+				// process the line.
+				ldalist.add(line);
+			}
+		}
+		File ldalistword = new File(f.getAbsolutePath() + "/data/testing/lda_list.txt");
+		FileWriter fw;
+		BufferedWriter bw;
+		fw = new FileWriter(ldalistword.getAbsoluteFile());
+		bw = new BufferedWriter(fw);
+		for (int i = 0; i < ldalist.size(); i++) {
+			bw.write(ldalist.get(i));
+			bw.write("\n");
+		}
+		bw.close();
 		double alpha = 0.1D;
 		double beta = 0.01D;
 		int numTopics = 3;
@@ -874,7 +946,7 @@ public class predictData {
 		// BufferReader from line of testing set in file topAssigment
 		// Read label and compare with correct label
 		// Write the result
-		File ldaresult = new File(f.getAbsolutePath() + "/data/testing/test_svm_matrix.txt");
+		File ldaresult = new File(f.getAbsolutePath() + "/data/testing/result/lda_result.txt");
 		FileWriter fw;
 		BufferedWriter bw;
 		fw = new FileWriter(ldaresult.getAbsoluteFile());
@@ -887,31 +959,49 @@ public class predictData {
 			String line;
 			while ((line = br.readLine()) != null) {
 				// process the line.
-				if (lineCount < 90)
+				if (lineCount < document_count)
 					lineCount++;
 				else {
 					String[] listword = line.split(" ");
+					int type1 = 0;
+					int type2 = 0;
+					int type3 = 0;
 					for (int x = 0; x < listword.length; x++) {
 						// Save into array
+						if (listword[x].contains("1"))
+							type1++;
+						else if (listword[x].contains("2"))
+							type2++;
+						else if (listword[x].contains("3"))
+							type3++;
 					}
+
 					// Check label of this line
 					// Compare with label[lineCount] and write to file like knn
 					String label = ""; // label = label of line
+					if (type1 > type2 && type1 > type3)
+						label = "1";
+					else if (type2 > type1 && type2 > type3)
+						label = "2";
+					else if (type3 > type1 && type3 > type2)
+						label = "3";
+
 					lineCount++;
 					if (lineCount == 1)
 						bw.write("TECHNOLOGY RESULT\n");
-					else if (lineCount == 31)
+					else if (lineCount == test_document_count / 3 + 1)
 						bw.write("EDUCATION RESULT\n");
-					else if (lineCount == 61)
+					else if (lineCount == 2 * test_document_count / 3 + 1)
 						bw.write("FASHTION RESULT\n");
 					bw.write("Document " + lineCount + ": Predict: " + label + " Correct: "
 							+ correct_label[lineCount - 1] + "\n");
 					if (label.equalsIgnoreCase(correct_label[lineCount - 1])) {
 						number_of_correct++;
 					}
-					if (lineCount == 30 || lineCount == 60 || lineCount == 90) {
-						bw.write("Final Result: " + number_of_correct + "/30 - Accuracy: "
-								+ number_of_correct * 100 / 30 + "%\n");
+					if (lineCount == test_document_count / 3 || lineCount == 2 * test_document_count / 3
+							|| lineCount == test_document_count) {
+						bw.write("Final Result: " + number_of_correct + "/" + test_document_count + " - Accuracy: "
+								+ number_of_correct * 100 / test_document_count + "%\n");
 						number_of_correct = 0;
 					}
 				}
@@ -927,12 +1017,14 @@ public class predictData {
 		convert_to_vector(fash_doc, "fashion");
 	}
 
-	public void FpredictData() throws FileNotFoundException, IOException {
+	public void FpredictData() throws Exception {
 		predictData pd = new predictData();
 		// pd.spellcheck();
-		// pd.prepareData();
+		pd.prepareData();
 		pd.knn_predict();
 		pd.svm_trainning();
 		pd.svm_predict();
+		pd.lda_predict();
+		pd.lda_result();
 	}
 }

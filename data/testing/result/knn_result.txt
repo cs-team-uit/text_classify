@@ -40,7 +40,7 @@ Document 36: Predict: 1 Correct: 2
 Document 37: Predict: 1 Correct: 2
 Document 38: Predict: 1 Correct: 2
 Document 39: Predict: 1 Correct: 2
-Document 40: Predict: 1 Correct: 2
+Document 40: Predict: 2 Correct: 2
 Document 41: Predict: 2 Correct: 2
 Document 42: Predict: 2 Correct: 2
 Document 43: Predict: 2 Correct: 2
@@ -57,7 +57,8 @@ Document 53: Predict: 2 Correct: 2
 Document 54: Predict: 2 Correct: 2
 Document 55: Predict: 2 Correct: 2
 Document 56: Predict: 2 Correct: 2
-Final Result: 16/28 - Accuracy: 57%
+Final Result: 17/28 - Accuracy: 60%
+FASHTION RESULT
 Document 57: Predict: 2 Correct: 3
 Document 58: Predict: 2 Correct: 3
 Document 59: Predict: 2 Correct: 3

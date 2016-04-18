@@ -14,7 +14,7 @@ public class Document_Classification {
 		pd = new predictData();
 	}
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws Exception {
 		Document_Classification document_classify = new Document_Classification();
 		document_classify.cd.FcreateData();
 		document_classify.pd.FpredictData();

@@ -91,12 +91,12 @@ public class CreateData {
 		}
 	}
 
-	public void spellCheckandRepair() {
-		// Spelling Check Technology Document
-		sc.doCheck(tech_doc);
-		sc.doCheck(edu_doc);
-		sc.doCheck(fash_doc);
-	}
+	// public void spellCheckandRepair() {
+	// // Spelling Check Technology Document
+	// sc.doCheck(tech_doc);
+	// sc.doCheck(edu_doc);
+	// sc.doCheck(fash_doc);
+	// }
 
 	public String[] sentSlipt(String vb) {
 		String[] ret = null;
@@ -226,6 +226,7 @@ public class CreateData {
 					// Rename file (or directory)
 					preprocessing.renameTo(orifile);
 				}
+				sc.doCheck(file);
 				// Read all text and split sentence then save to array
 				InputStream is = null;
 				is = new FileInputStream(file);
@@ -375,7 +376,7 @@ public class CreateData {
 								word[j - 1] = String1.get();
 								word[j] = String2.get();
 							}
-					for (int k = 0; k < 50; k++) {
+					for (int k = 0; k < 40; k++) {
 						bw.write(word[k] + " ");
 					}
 					bw.write("\n");
@@ -689,18 +690,18 @@ public class CreateData {
 	}
 
 	public void createTrainingData() throws IOException {
-		// extractWord(tech_doc, "technology");
-		// extractWord(edu_doc, "education");
-		// extractWord(fash_doc, "fashion");
-		// calcVSM("technology");
-		// calcVSM("education");
-		// calcVSM("fashion");
-		// getkeyword("technology");
-		// getkeyword("education");
-		// getkeyword("fashion");
-		// maketrainningkey();
-		// creatematrix_knn();
-		// creatematrix_svm();
+		extractWord(tech_doc, "technology");
+		extractWord(edu_doc, "education");
+		extractWord(fash_doc, "fashion");
+		calcVSM("technology");
+		calcVSM("education");
+		calcVSM("fashion");
+		getkeyword("technology");
+		getkeyword("education");
+		getkeyword("fashion");
+		maketrainningkey();
+		creatematrix_knn();
+		creatematrix_svm();
 	}
 
 	/**

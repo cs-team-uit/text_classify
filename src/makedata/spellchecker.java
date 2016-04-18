@@ -18,8 +18,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
 
 import vn.hus.nlp.sd.SentenceDetector;
 import vn.hus.nlp.tokenizer.VietTokenizer;
@@ -103,82 +101,115 @@ public class spellchecker {
 		return sb.toString();
 	}
 
-	public void doCheck(List<String> list_doc) {
+	public static boolean isNumeric(String str) {
+		try {
+			double d = Double.parseDouble(str);
+		} catch (NumberFormatException nfe) {
+			return false;
+		}
+		return true;
+	}
+
+	public void doCheck(String file) {
 		try {
 			FileWriter fw;
 			BufferedWriter bw;
-			for (Iterator<String> i = list_doc.iterator(); i.hasNext();) {
-				// Get file dir
-				String file = i.next();
-				// Create
-				File orifile = new File(file);
-				// Create temp file
-				File temp = new File(file + "-t.txt");
-				fw = new FileWriter(temp.getAbsoluteFile());
-				bw = new BufferedWriter(fw);
-				// Read and check the input from the text file
-				System.out.println("Reading from " + file);
-				// Read all text and split sentence then save to array
-				InputStream is = null;
-				is = new FileInputStream(file);
-				String sentence[] = sentSlipt(readStream(is));
-				// Create word split array (original)
-				String[] wordsplit = new String[sentence.length];
-				// Create array that store every word after split by space
-				String[] word = new String[256];
-				// Store in array
-				for (int j = 0; j < sentence.length; j++) {
-					wordsplit[j] = wordslipt(sentence[j]);
-				}
-				// Process every wordsplit
-				for (String wl : wordsplit) {
-					// Store every word splited to array
-					word = wl.split(" ");
+			// for (Iterator<String> i = list_doc.iterator(); i.hasNext();) {
+			// Get file dir
+			// String file = i.next();
+			// Create
+			File orifile = new File(file);
+			// Create temp file
+			File temp = new File(file + "-t.txt");
+			fw = new FileWriter(temp.getAbsoluteFile());
+			bw = new BufferedWriter(fw);
+			// Read and check the input from the text file
+			System.out.println("Reading from " + file);
+			// Read all text and split sentence then save to array
+			InputStream is = null;
+			is = new FileInputStream(file);
+			String sentence[] = sentSlipt(readStream(is));
+			// Create word split array (original)
+			String[] wordsplit = new String[sentence.length];
+			// Create array that store every word after split by space
+			String[] word = new String[256];
+			// Store in array
+			for (int j = 0; j < sentence.length; j++) {
+				wordsplit[j] = wordslipt(sentence[j]);
+			}
+			// Process every wordsplit
+			for (String wl : wordsplit) {
+				// Store every word splited to array
+				word = wl.split(" ");
 
-					for (int x = 0; x < word.length; x++) {
-						System.out.println(word[x]);
-						suggestWord = true;
-						hasSpecialSymbol = false;
-						String outputWord = checkWord(word[x]);
-						// if outputWord length = 1 -> symbol -> no need suggest
-						if (outputWord.length() == 1) {
-							suggestWord = false;
-							hasSpecialSymbol = true;
-						}
+				for (int x = 0; x < word.length; x++) {
+					System.out.println(word[x]);
+					suggestWord = true;
+					String outputWord = checkWord(word[x]);
+					String wordcase = word[x].toLowerCase();
+					if (outputWord.equals(wordcase)) { // neu khong thay doi
+														// thi tra ve trang
+														// thai cu
+						outputWord = word[x];
+					}
+					if (outputWord.length() == 0) {
+						outputWord = word[x];
+					}
 
-						String result = outputWord.replace('_', ' ');
-						// System.out.println("outputWord = " +
-						// outputWord.replace('_', ' '));
-						if (suggestWord) {
-							// System.out.println(
-							// "Suggestions for " + word[x] + " are: " +
-							// suggest.correct(outputWord) + "\n");
-							String correctword = suggest.correct(outputWord);
-							String correct_result = correctword.replace('_', ' ');
-							if (correctword.length() > 10) { // error
-								if (hasSpecialSymbol)
+					if (outputWord.length() == 1) {
+						suggestWord = false;
+					}
+					// if (!StringUtils.isNumeric(outputWord)) {
+					// hasSpecialSymbol = true;
+					// }
+					// }
+
+					String result = outputWord.replace('_', ' ');
+					// System.out.println("outputWord = " +
+					// outputWord.replace('_', ' '));
+					if (suggestWord) {
+						// System.out.println(
+						// "Suggestions for " + word[x] + " are: " +
+						// suggest.correct(outputWord) + "\n");
+						String correctword = suggest.correct(outputWord);
+						String correct_result = correctword.replace('_', ' ');
+						if (correctword.length() > 10) { // error
+							if (x + 1 < word.length) {
+								if (word[x + 1].length() == 1 && !isNumeric(word[x + 1]))
 									bw.write(result);
 								else
 									bw.write(result + " ");
-							} else if (hasSpecialSymbol)
-								bw.write(correct_result);
-							else
-								bw.write(correct_result + " ");
+							} else
+								bw.write(result + " ");
 						} else {
-							if (hasSpecialSymbol)
+							if (x + 1 < word.length) {
+								if (word[x + 1].length() == 1 && !isNumeric(word[x + 1]))
+									bw.write(correct_result);
+								else
+									bw.write(correct_result + " ");
+							} else
+								bw.write(result + " ");
+						}
+					} else {
+						if (x + 1 < word.length) {
+							if (word[x + 1].length() == 1 && !isNumeric(word[x + 1]))
 								bw.write(result);
 							else
 								bw.write(result + " ");
-						}
+						} else
+							bw.write(result + " ");
 					}
 				}
-				bw.close();
-				if (orifile.exists())
-					orifile.delete();
-				// Rename file (or directory)
-				temp.renameTo(orifile);
 			}
-		} catch (IOException e) {
+			bw.close();
+			if (orifile.exists())
+				orifile.delete();
+			// Rename file (or directory)
+			temp.renameTo(orifile);
+			// }
+		} catch (
+
+		IOException e) {
 			System.out.println("IOException Occured! ");
 			e.printStackTrace();
 			// System.exit(-1);
