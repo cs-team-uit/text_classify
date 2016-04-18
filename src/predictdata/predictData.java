@@ -68,7 +68,7 @@ public class predictData {
 				f.getAbsolutePath() + "/data/tools/NLPTools/models/sentDetection/VietnameseSD.bin.gz");
 		tokenizer = new VietTokenizer(f.getAbsolutePath() + "/data/tools/NLPTools/tokenizer.properties");
 		tagger = new MaxentTagger(f.getAbsolutePath() + "/data/tools/NLPTools/model/maxent");
-
+		sc = new spellchecker();
 	}
 
 	private void readFile() {
@@ -712,7 +712,7 @@ public class predictData {
 				if (lineCount == test_document_count / 3 || lineCount == 2 * test_document_count / 3
 						|| lineCount == test_document_count) {
 					bw.write("Final Result: " + number_of_correct + "/" + test_document_count / 3 + " - Accuracy: "
-							+ number_of_correct * 100 / test_document_count + "%\n");
+							+ number_of_correct * 100 / (test_document_count / 3) + "%\n");
 					number_of_correct = 0;
 				}
 
@@ -936,7 +936,7 @@ public class predictData {
 		int savestep = 0;
 		String expName = "model";
 		String corpusPath = f.getAbsolutePath() + "/data/testing/lda_list.txt";
-		String tAssignsFilePath = "/data/testing/lda_result/";
+		String tAssignsFilePath = "";
 		models.GibbsSamplingLDA lda = new GibbsSamplingLDA(corpusPath, numTopics, alpha, beta, numIterations, topWords,
 				expName, tAssignsFilePath, savestep);
 		lda.inference();
@@ -952,7 +952,7 @@ public class predictData {
 		fw = new FileWriter(ldaresult.getAbsoluteFile());
 		bw = new BufferedWriter(fw);
 
-		File topassign = new File(f.getAbsolutePath() + "/data/testing/lda_result/model.topicAssignments");
+		File topassign = new File(f.getAbsolutePath() + "/data/testing/model.topicAssignments");
 		int lineCount = 0;
 		int number_of_correct = 0;
 		try (BufferedReader br = new BufferedReader(new FileReader(topassign.getAbsoluteFile()))) {
@@ -987,21 +987,22 @@ public class predictData {
 						label = "3";
 
 					lineCount++;
-					if (lineCount == 1)
+					if (lineCount - document_count == 1)
 						bw.write("TECHNOLOGY RESULT\n");
-					else if (lineCount == test_document_count / 3 + 1)
+					else if (lineCount - document_count == test_document_count / 3 + 1)
 						bw.write("EDUCATION RESULT\n");
-					else if (lineCount == 2 * test_document_count / 3 + 1)
+					else if (lineCount - document_count == 2 * test_document_count / 3 + 1)
 						bw.write("FASHTION RESULT\n");
-					bw.write("Document " + lineCount + ": Predict: " + label + " Correct: "
-							+ correct_label[lineCount - 1] + "\n");
-					if (label.equalsIgnoreCase(correct_label[lineCount - 1])) {
+					bw.write("Document " + (lineCount - document_count) + ": Predict: " + label + " Correct: "
+							+ correct_label[lineCount - document_count - 1] + "\n");
+					if (label.equalsIgnoreCase(correct_label[lineCount - document_count - 1])) {
 						number_of_correct++;
 					}
-					if (lineCount == test_document_count / 3 || lineCount == 2 * test_document_count / 3
-							|| lineCount == test_document_count) {
-						bw.write("Final Result: " + number_of_correct + "/" + test_document_count + " - Accuracy: "
-								+ number_of_correct * 100 / test_document_count + "%\n");
+					if (lineCount - document_count == test_document_count / 3
+							|| lineCount - document_count == 2 * test_document_count / 3
+							|| lineCount - document_count == test_document_count) {
+						bw.write("Final Result: " + number_of_correct + "/" + (test_document_count / 3)
+								+ " - Accuracy: " + number_of_correct * 100 / (test_document_count / 3) + "%\n");
 						number_of_correct = 0;
 					}
 				}
@@ -1019,11 +1020,11 @@ public class predictData {
 
 	public void FpredictData() throws Exception {
 		predictData pd = new predictData();
-		// pd.spellcheck();
 		pd.prepareData();
 		pd.knn_predict();
 		pd.svm_trainning();
 		pd.svm_predict();
+		pd.parseData();
 		pd.lda_predict();
 		pd.lda_result();
 	}

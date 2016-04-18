@@ -1,3 +1,19 @@
 Kiem tra lai du lieu qua moi buoc, nhat la kiem tra chinh ta vi co the tu goi y se lam cho word bi sai
 Tim du lieu tot hon
 Thu nghiem de can chinh cac thong so
+
+hiện tại nhiều trường hợp file có cấu trúc lạ chưa handle hết được, cần chạy thêm và chỉnh lại file
+cái kiểm tra chính tả không phải làm theo cách của thầy nên cần cân nhắc để hỏi thầy xem có cần đổi ko
+kiểm tra chính tả có mục sửa lỗi nhưng do nhiều dữ liệu quá nên tìm bug ói máu, chưa check hết được chỗ đó
+format file sau khi kiểm tra chính tả có thể khác so với file gốc nên cũng cần xem lại
+có thể sẽ phải có phần output cho dữ liệu trst sau khi đã check chính tả
+lda thì chưa thử nghiệm nữa.
+giờ chắc cần đảm bảo ko còn bug nào nữa thì mới có thể chỉnh các thông số để tăng độ chính xác
+
+B1: Tìm file lỗi do craw  
+B2: Sữa lỗi do craw
+B3: Fix các trường hợp khác nhưng không phải do craw 
+B4: Kiểm tra phần sửa chính tả có suggest ra đúng không 
+B5: Kiểm tra lại format, chỉ cần nó đúng chuẩn, không cần theo như cũ
+B6: Chạy thử LDA
+B7: Improve các thông số 

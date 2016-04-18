@@ -19,5 +19,6 @@
 	<classpathentry kind="lib" path="/Volumes/Study/Project/text_classify/data/tools/weka.jar"/>
 	<classpathentry kind="lib" path="/Volumes/Study/Project/text_classify/data/tools/libsvm.jar"/>
 	<classpathentry kind="lib" path="/Users/aerospire/Downloads/jLDADMM-master/jar/jLDADMM.jar"/>
+	<classpathentry kind="lib" path="/Volumes/Study/Project/text_classify/data/tools/jLDADMM.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
