@@ -15,5 +15,5 @@ B2: Sữa lỗi do craw
 B3: Fix các trường hợp khác nhưng không phải do craw 
 B4: Kiểm tra phần sửa chính tả có suggest ra đúng không 
 B5: Kiểm tra lại format, chỉ cần nó đúng chuẩn, không cần theo như cũ
-B6: Chạy thử LDA
+B6: Chạy thử LDA .Done !
 B7: Improve các thông số 

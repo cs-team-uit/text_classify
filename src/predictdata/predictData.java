@@ -35,15 +35,15 @@ public class predictData {
 	private String[] correct_label;
 	public spellchecker sc;
 	File f = new File(".");
-	private int document_count = 360;
-	private int test_document_count = 84;
+	private int document_count = 3600;
+	private int test_document_count = 62 * 3;
 	public int all_keyword_size;
 	public static final String TECH_DOC_PATH = "/data/documents/test_data/technology/";
 	public static final String EDU_DOC_PATH = "/data/documents/test_data/education/";
-	public static final String FASH_DOC_PATH = "/data/documents/test_data/fashion/";
+	public static final String HEAL_DOC_PATH = "/data/documents/test_data/healthy/";
 	private List<String> tech_doc = new ArrayList<String>();
 	private List<String> edu_doc = new ArrayList<String>();
-	private List<String> fash_doc = new ArrayList<String>();
+	private List<String> heal_doc = new ArrayList<String>();
 	SentenceDetector detector;
 	VietTokenizer tokenizer;
 	MaxentTagger tagger;
@@ -90,11 +90,11 @@ public class predictData {
 			}
 		}
 		// Read Economic Document
-		files = new File(f.getAbsolutePath() + FASH_DOC_PATH).listFiles();
+		files = new File(f.getAbsolutePath() + HEAL_DOC_PATH).listFiles();
 
 		for (File file : files) {
 			if (file.isFile()) {
-				fash_doc.add(file.getAbsolutePath());
+				heal_doc.add(file.getAbsolutePath());
 			}
 		}
 	}
@@ -396,7 +396,7 @@ public class predictData {
 		List<String> list_allkeyword = new ArrayList<String>();
 		File tech_listword = new File(f.getAbsolutePath() + "/data/testing/technology/listword.txt");
 		File edu_listword = new File(f.getAbsolutePath() + "/data/testing/education/listword.txt");
-		File fash_listword = new File(f.getAbsolutePath() + "/data/testing/fashion/listword.txt");
+		File fash_listword = new File(f.getAbsolutePath() + "/data/testing/healthy/listword.txt");
 		File all_key = new File(f.getAbsolutePath() + "/data/trainning/allkeyword.txt");
 		File fknn_matrix = new File(f.getAbsolutePath() + "/data/testing/test_knn_matrix.txt");
 		File fknn_label = new File(f.getAbsolutePath() + "/data/testing/test_knn_label.txt");
@@ -762,7 +762,7 @@ public class predictData {
 		List<String> list_allkeyword = new ArrayList<String>();
 		File tech_listword = new File(f.getAbsolutePath() + "/data/testing/technology/listword.txt");
 		File edu_listword = new File(f.getAbsolutePath() + "/data/testing/education/listword.txt");
-		File fash_listword = new File(f.getAbsolutePath() + "/data/testing/fashion/listword.txt");
+		File fash_listword = new File(f.getAbsolutePath() + "/data/testing/healthy/listword.txt");
 		File all_key = new File(f.getAbsolutePath() + "/data/trainning/allkeyword.txt");
 		File fsvm_matrix = new File(f.getAbsolutePath() + "/data/testing/test_svm_matrix.txt");
 		FileWriter fw;
@@ -863,7 +863,7 @@ public class predictData {
 		List<String> ldalist = new ArrayList<String>();
 		File train_tech_listword = new File(f.getAbsolutePath() + "/data/trainning/technology/listword.txt");
 		File train_edu_listword = new File(f.getAbsolutePath() + "/data/trainning/education/listword.txt");
-		File train_fash_listword = new File(f.getAbsolutePath() + "/data/trainning/fashion/listword.txt");
+		File train_fash_listword = new File(f.getAbsolutePath() + "/data/trainning/healthy/listword.txt");
 		try (BufferedReader br = new BufferedReader(new FileReader(train_tech_listword.getAbsoluteFile()))) {
 			String line;
 			// Vi tri dong
@@ -892,7 +892,7 @@ public class predictData {
 		}
 		File test_tech_listword = new File(f.getAbsolutePath() + "/data/testing/technology/listword.txt");
 		File test_edu_listword = new File(f.getAbsolutePath() + "/data/testing/education/listword.txt");
-		File test_fash_listword = new File(f.getAbsolutePath() + "/data/testing/fashion/listword.txt");
+		File test_fash_listword = new File(f.getAbsolutePath() + "/data/testing/healthy/listword.txt");
 		try (BufferedReader br = new BufferedReader(new FileReader(test_tech_listword.getAbsoluteFile()))) {
 			String line;
 			// Vi tri dong
@@ -935,7 +935,7 @@ public class predictData {
 		int topWords = 20;
 		int savestep = 0;
 		String expName = "model";
-		String corpusPath = f.getAbsolutePath() + "/data/testing/lda_list.txt";
+		String corpusPath = f.getAbsolutePath() + "/data/testing/lda_result/lda_list.txt";
 		String tAssignsFilePath = "";
 		models.GibbsSamplingLDA lda = new GibbsSamplingLDA(corpusPath, numTopics, alpha, beta, numIterations, topWords,
 				expName, tAssignsFilePath, savestep);
@@ -952,7 +952,7 @@ public class predictData {
 		fw = new FileWriter(ldaresult.getAbsoluteFile());
 		bw = new BufferedWriter(fw);
 
-		File topassign = new File(f.getAbsolutePath() + "/data/testing/model.topicAssignments");
+		File topassign = new File(f.getAbsolutePath() + "/data/testing/lda_result/model.topicAssignments");
 		int lineCount = 0;
 		int number_of_correct = 0;
 		try (BufferedReader br = new BufferedReader(new FileReader(topassign.getAbsoluteFile()))) {
@@ -1015,14 +1015,14 @@ public class predictData {
 		readFile();
 		convert_to_vector(tech_doc, "technology");
 		convert_to_vector(edu_doc, "education");
-		convert_to_vector(fash_doc, "fashion");
+		convert_to_vector(heal_doc, "healthy");
 	}
 
 	public void FpredictData() throws Exception {
 		predictData pd = new predictData();
 		pd.prepareData();
-		pd.knn_predict();
-		pd.svm_trainning();
+		// pd.knn_predict();
+		// pd.svm_trainning();
 		pd.svm_predict();
 		pd.parseData();
 		pd.lda_predict();

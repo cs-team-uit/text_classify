@@ -25,12 +25,12 @@ import vn.hus.nlp.tokenizer.VietTokenizer;
 public class CreateData {
 	public static final String TECH_DOC_PATH = "/data/documents/train_data/technology/";
 	public static final String EDU_DOC_PATH = "/data/documents/train_data/education/";
-	public static final String FASH_DOC_PATH = "/data/documents/train_data/fashion/";
+	public static final String HEAL_DOC_PATH = "/data/documents/train_data/healthy/";
 
 	private List<String> tech_doc = new ArrayList<String>();
 	private List<String> edu_doc = new ArrayList<String>();
-	private List<String> fash_doc = new ArrayList<String>();
-	int document_count = 360;
+	private List<String> heal_doc = new ArrayList<String>();
+	int document_count = 3600;
 	public File f;
 	public spellchecker sc;
 	SentenceDetector detector;
@@ -82,11 +82,11 @@ public class CreateData {
 			}
 		}
 		// Read Economic Document
-		files = new File(f.getAbsolutePath() + FASH_DOC_PATH).listFiles();
+		files = new File(f.getAbsolutePath() + HEAL_DOC_PATH).listFiles();
 
 		for (File file : files) {
 			if (file.isFile()) {
-				fash_doc.add(file.getAbsolutePath());
+				heal_doc.add(file.getAbsolutePath());
 			}
 		}
 	}
@@ -431,7 +431,7 @@ public class CreateData {
 		// Đọc 3 file mà tạo ra 1 file keyword chung
 		File tech_key = new File(f.getAbsolutePath() + "/data/trainning/technology/keyword.txt");
 		File edu_key = new File(f.getAbsolutePath() + "/data/trainning/education/keyword.txt");
-		File fash_key = new File(f.getAbsolutePath() + "/data/trainning/fashion/keyword.txt");
+		File fash_key = new File(f.getAbsolutePath() + "/data/trainning/healthy/keyword.txt");
 		File all_key = new File(f.getAbsolutePath() + "/data/trainning/allkeyword.txt");
 
 		List<String> all_keyword = new ArrayList<String>();
@@ -502,7 +502,7 @@ public class CreateData {
 		List<String> list_allkeyword = new ArrayList<String>();
 		File tech_listword = new File(f.getAbsolutePath() + "/data/trainning/technology/listword.txt");
 		File edu_listword = new File(f.getAbsolutePath() + "/data/trainning/education/listword.txt");
-		File fash_listword = new File(f.getAbsolutePath() + "/data/trainning/fashion/listword.txt");
+		File fash_listword = new File(f.getAbsolutePath() + "/data/trainning/healthy/listword.txt");
 		File all_key = new File(f.getAbsolutePath() + "/data/trainning/allkeyword.txt");
 		File fknn_matrix = new File(f.getAbsolutePath() + "/data/trainning/knn_matrix.txt");
 		File fknn_label = new File(f.getAbsolutePath() + "/data/trainning/knn_label.txt");
@@ -617,7 +617,7 @@ public class CreateData {
 		List<String> list_allkeyword = new ArrayList<String>();
 		File tech_listword = new File(f.getAbsolutePath() + "/data/trainning/technology/listword.txt");
 		File edu_listword = new File(f.getAbsolutePath() + "/data/trainning/education/listword.txt");
-		File fash_listword = new File(f.getAbsolutePath() + "/data/trainning/fashion/listword.txt");
+		File fash_listword = new File(f.getAbsolutePath() + "/data/trainning/healthy/listword.txt");
 		File all_key = new File(f.getAbsolutePath() + "/data/trainning/allkeyword.txt");
 		File fsvm_matrix = new File(f.getAbsolutePath() + "/data/trainning/svm_matrix.txt");
 		FileWriter fw;
@@ -692,13 +692,13 @@ public class CreateData {
 	public void createTrainingData() throws IOException {
 		extractWord(tech_doc, "technology");
 		extractWord(edu_doc, "education");
-		extractWord(fash_doc, "fashion");
+		extractWord(heal_doc, "healthy");
 		calcVSM("technology");
 		calcVSM("education");
-		calcVSM("fashion");
+		calcVSM("healthy");
 		getkeyword("technology");
 		getkeyword("education");
-		getkeyword("fashion");
+		getkeyword("healthy");
 		maketrainningkey();
 		creatematrix_knn();
 		creatematrix_svm();
