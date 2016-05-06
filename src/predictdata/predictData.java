@@ -22,21 +22,29 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-import jvntagger.MaxentTagger;
-import makedata.spellchecker;
 import models.GibbsSamplingLDA;
-import vn.hus.nlp.sd.SentenceDetector;
-import vn.hus.nlp.tokenizer.VietTokenizer;
-
+import tools.nlplib;
+import weka.classifiers.bayes.NaiveBayesMultinomialUpdateable;
+import weka.classifiers.functions.SMO;
+import weka.classifiers.lazy.IBk;
+import weka.classifiers.meta.FilteredClassifier;
+import weka.core.Attribute;
+import weka.core.DenseInstance;
+import weka.core.FastVector;
+import weka.core.Instance;
+import weka.core.Instances;
+import weka.core.converters.ArffLoader.ArffReader;
+import weka.filters.Filter;
+import weka.filters.unsupervised.attribute.StringToWordVector;;
 public class predictData {
 	// KNN area
 	private double[][] instances;
 	private String[] label;
 	private String[] correct_label;
-	public spellchecker sc;
+
 	File f = new File(".");
-	private int document_count = 3600;
-	private int test_document_count = 62 * 3;
+	private int document_count = 100*3;
+	private int test_document_count = 30 * 3;
 	public int all_keyword_size;
 	public static final String TECH_DOC_PATH = "/data/documents/test_data/technology/";
 	public static final String EDU_DOC_PATH = "/data/documents/test_data/education/";
@@ -44,10 +52,7 @@ public class predictData {
 	private List<String> tech_doc = new ArrayList<String>();
 	private List<String> edu_doc = new ArrayList<String>();
 	private List<String> heal_doc = new ArrayList<String>();
-	SentenceDetector detector;
-	VietTokenizer tokenizer;
-	MaxentTagger tagger;
-	GibbsSamplingLDA LDA;
+	nlplib lib;
 
 	String sentence[] = new String[256];
 	String[] wordsplit = new String[sentence.length];
@@ -61,16 +66,11 @@ public class predictData {
 
 	List<String> temp_wordoffile = new ArrayList<String>();
 	List<String> wordoffile = new ArrayList<String>();
+	List<String> lstopword = new ArrayList<String>();
 
-	public predictData() throws IOException {
-		f = new File(".");
-		detector = new SentenceDetector(
-				f.getAbsolutePath() + "/data/tools/NLPTools/models/sentDetection/VietnameseSD.bin.gz");
-		tokenizer = new VietTokenizer(f.getAbsolutePath() + "/data/tools/NLPTools/tokenizer.properties");
-		tagger = new MaxentTagger(f.getAbsolutePath() + "/data/tools/NLPTools/model/maxent");
-		sc = new spellchecker();
+	public predictData() {
+		f = new File("");
 	}
-
 	private void readFile() {
 
 		File[] files;
@@ -103,7 +103,7 @@ public class predictData {
 		String[] ret = null;
 		try {
 
-			ret = detector.sentDetect(vb);
+			ret = lib.detector.sentDetect(vb);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -112,14 +112,14 @@ public class predictData {
 
 	public String wordslipt(String cau) {
 		String ret = null;
-		ret = tokenizer.segment(cau);
+		ret = lib.tokenizer.segment(cau);
 		return ret;
 	}
 
 	public String tagger(String sentence) {
 		String ret = null;
 
-		ret = tagger.tagging(sentence);
+		ret = lib.tagger.tagging(sentence);
 		return ret;
 	}
 
@@ -142,8 +142,9 @@ public class predictData {
 		type_tagger[1] = "/Nc";
 		type_tagger[2] = "/Nu";
 		type_tagger[3] = "/Ny";
-		type_tagger[4] = "/N";
-		type_tagger[5] = "/V";
+		type_tagger[4] = "/Nb";
+		type_tagger[5] = "/N";
+		type_tagger[6] = "/V";
 	}
 
 	public boolean isAlpha(String name) {
@@ -157,7 +158,15 @@ public class predictData {
 
 		return true;
 	}
-
+	public void stopword() throws FileNotFoundException, IOException {
+		File stopword = new File(f.getAbsolutePath() + "/data/stopword.txt");
+		try (BufferedReader br = new BufferedReader(new FileReader(stopword))) {
+			for (String line; (line = br.readLine()) != null;) {
+				// process the line.
+				lstopword.add(line);
+			}
+		}
+	}
 	private void extractWord(List<String> list_doc, String doc_type) {
 		try {
 			FileWriter fw;
@@ -166,7 +175,7 @@ public class predictData {
 
 			FileWriter fwl;
 			BufferedWriter bwl;
-			File temp = new File(f.getAbsolutePath() + "/data/testing/" + doc_type + "/temp_listword.txt");
+			File temp = new File(f.getAbsolutePath() + "/data/testing/" + doc_type + "/raw_listword.txt");
 			fw = new FileWriter(temp.getAbsoluteFile());
 			bw = new BufferedWriter(fw);
 
@@ -189,7 +198,10 @@ public class predictData {
 							String[] listword = line.split(" ");
 							for (int x = 0; x < listword.length; x++) {
 								if (listword[x].contains(".")) {
-									if (listword[x].indexOf(".") + 1 == listword[x].length())
+									if (lstopword.contains(listword[x])) {
+										continue;
+									}
+									else if (listword[x].indexOf(".") + 1 == listword[x].length())
 										continue;
 									String a_letter = Character
 											.toString(listword[x].charAt(listword[x].indexOf(".") + 1));
@@ -219,8 +231,10 @@ public class predictData {
 						orifile.delete();
 					// Rename file (or directory)
 					preprocessing.renameTo(orifile);
+					if (preprocessing.exists()) 
+						preprocessing.renameTo(orifile);
 				}
-				sc.doCheck(file);
+				//sc.doCheck(file);
 				// Read and check the input from the text file
 				System.out.println("Reading from " + file);
 				// Read all text and split sentence then save to array
@@ -317,10 +331,10 @@ public class predictData {
 			BufferedWriter bw;
 			set_typetagger();
 
-			File flistword = new File(f.getAbsolutePath() + "/data/testing/" + doc_type + "/listword.txt");
+			File flistword = new File(f.getAbsolutePath() + "/data/testing/" + doc_type + "/tf-idf_listword.txt");
 			fw = new FileWriter(flistword.getAbsoluteFile());
 			bw = new BufferedWriter(fw);
-			String file = f.getAbsolutePath() + "/data/testing/" + doc_type + "/temp_listword.txt";
+			String file = f.getAbsolutePath() + "/data/testing/" + doc_type + "/raw_listword.txt";
 
 			double[] tf;
 			double[] idf;
@@ -365,7 +379,8 @@ public class predictData {
 								word[j - 1] = String1.get();
 								word[j] = String2.get();
 							}
-					for (int k = 0; k < 40; k++) {
+					int max = 20;
+					for (int k = 0; k < max; k++) {
 						bw.write(word[k] + " ");
 					}
 					bw.write("\n");
@@ -382,21 +397,11 @@ public class predictData {
 	}
 
 	private void creatematrix_knn() throws FileNotFoundException, IOException {
-		// Đọc lần lược 3 file list word
-		// Mỗi lần đọc một dòng thì so sánh với totaltrainningkey và tạo ra
-		// vector nhị phân
-		// Đồng thời, ghi lại label của vector đó ở 1 file khác
-		// và ghi ra 1 file vừa label vừa vector cho svm
-		//
-		// Đưa all_keyword vao list
-		// Đọc lần lượt từng file
-		// Đọc từng dòng, kiểm tra xem word trong file đó có ở chỗ nào của list
-		// Vị trí có = 1 , không có thì bằng 0
-		// Ghi label vào 1 file khác
+
 		List<String> list_allkeyword = new ArrayList<String>();
-		File tech_listword = new File(f.getAbsolutePath() + "/data/testing/technology/listword.txt");
-		File edu_listword = new File(f.getAbsolutePath() + "/data/testing/education/listword.txt");
-		File fash_listword = new File(f.getAbsolutePath() + "/data/testing/healthy/listword.txt");
+		File tech_listword = new File(f.getAbsolutePath() + "/data/testing/technology/tf-idf_listword.txt");
+		File edu_listword = new File(f.getAbsolutePath() + "/data/testing/education/tf-idf_listword.txt");
+		File fash_listword = new File(f.getAbsolutePath() + "/data/testing/healthy/tf-idf_listword.txt");
 		File all_key = new File(f.getAbsolutePath() + "/data/trainning/allkeyword.txt");
 		File fknn_matrix = new File(f.getAbsolutePath() + "/data/testing/test_knn_matrix.txt");
 		File fknn_label = new File(f.getAbsolutePath() + "/data/testing/test_knn_label.txt");
@@ -633,17 +638,8 @@ public class predictData {
 	}
 
 	private void knn_predict() throws FileNotFoundException, IOException {
-		// Đọc ma trận trong file và lưu vào mảng 2 chiều knn_matrix
-		// Đọc label trong file và ghi vào mảng label
-		// Khai báo class
-		// Đọc các lần lượt từng file trong bộ test và biến đổi về cấu trúc
-		// vector
-		// Predit từng file và so sánh kết quả với label chuẩn trong thư mục
-		// test
-		// Lưu lại kết quả trong file result
-		int k = 20; // number of negh
+		int k = 10; // number of negh
 		// spellcheck();
-
 		creatematrix_knn();
 		parseData();
 		int number_of_correct = 0;
@@ -750,19 +746,372 @@ public class predictData {
 			return a.distance < b.distance ? -1 : a.distance == b.distance ? 0 : 1;
 		}
 	}
-
+	private String double2label(double pred) {
+		if (pred == 0.0) 
+			return "technology";
+		else if (pred == 1.0)
+			return "education";
+		else 
+			return "healthy";
+	}
+	private String string2label(String label) {
+		if (label.equals("1")) 
+			return "technology";
+		else if (label.equals("2"))
+			return "education";
+		else 
+			return "healthy";
+	}
 	// KNN area
+	private void predict_bayes() throws IOException {
+		try {
+			parseData();
+			File tech_listword = new File(f.getAbsolutePath() + "/data/testing/technology/tf-idf_listword.txt");
+			File edu_listword = new File(f.getAbsolutePath() + "/data/testing/education/tf-idf_listword.txt");
+			File fash_listword = new File(f.getAbsolutePath() + "/data/testing/healthy/tf-idf_listword.txt");
+			File fresult = new File(f.getAbsolutePath() + "/data/testing/result/bayes_result.txt");
+			List<String> query_word = new ArrayList<String>();
+			FileWriter fw;
+			BufferedWriter bw;
+			fw = new FileWriter(fresult.getAbsoluteFile());
+			bw = new BufferedWriter(fw);
+			
+			Reader r = new BufferedReader(new InputStreamReader(
+					new FileInputStream(f.getAbsolutePath() + "/data/trainning/data.arff"), "UTF-8"));
+			ArffReader arff = new ArffReader(r);
+			
+			Instances samples = arff.getData();
+			
+			samples.setClassIndex(0);
+			StringToWordVector filter = new StringToWordVector();
+            filter.setAttributeIndices("last");
+            FilteredClassifier new_classifier = new FilteredClassifier();
+            new_classifier.setFilter(filter);
+            new_classifier.setClassifier(new NaiveBayesMultinomialUpdateable());
+            new_classifier.buildClassifier(samples);
+            
+			r.close();
+			int lineCount = 0;
+			int number_of_correct = 0;
+			//--------------------------------------
+			try (BufferedReader br = new BufferedReader(new FileReader(tech_listword.getAbsoluteFile()))) {
+				String line;
+				// Vi tri dong
+				while ((line = br.readLine()) != null) {
+					// process the line.
+					query_word.add(line);	
+				}
+			}
+			try (BufferedReader br = new BufferedReader(new FileReader(edu_listword.getAbsoluteFile()))) {
+				String line;
+				// Vi tri dong
+				while ((line = br.readLine()) != null) {
+					// process the line.
+					query_word.add(line);
+				}
+			}
+			try (BufferedReader br = new BufferedReader(new FileReader(fash_listword.getAbsoluteFile()))) {
+				String line;
+				// Vi tri dong
+				while ((line = br.readLine()) != null) {
+					// process the line.
+					query_word.add(line);		
+				}
+			}
+			FastVector<String> fvNominalVal = new FastVector<String>(2);
+			fvNominalVal.addElement("technology");
+			fvNominalVal.addElement("education");
+			fvNominalVal.addElement("healthy");
+			Attribute attribute1 = new Attribute("class", fvNominalVal);
+			Attribute attribute2 = new Attribute("keyword",(FastVector<String>) null);
+			// Create list of instances with one element
+			FastVector<Attribute> fvWekaAttributes = new FastVector<Attribute>(2);
+			fvWekaAttributes.addElement(attribute1);
+			fvWekaAttributes.addElement(attribute2);
+			Instances newinstances = new Instances("document_classify", fvWekaAttributes, 1);           
+			newinstances.setClassIndex(0);
+			for (int i = 0; i < test_document_count; i++) {
+				DenseInstance instance = new DenseInstance(2);
+				instance.setValue(attribute2, query_word.get(i));
+				newinstances.add(instance); 
+			}
+			//StringToWordVector testfilter = new StringToWordVector();
+			//filter.setInputFormat(newinstances);
+			//Instances filteredData = Filter.useFilter(newinstances, filter);
+			System.out.println(newinstances);
+
+			//--------------------------------------
+			for (int i = 0; i < test_document_count; i++) {
+					// Process
+					filter.input(newinstances.instance(i));
+					Instance filteredInstance = filter.output();
+					double majClass = new_classifier.classifyInstance(newinstances.instance(i));
+					System.out.println(newinstances.instance(i).stringValue(1));
+					System.out.println("===== Classified instance =====");
+					System.out.println("Class predicted: " + newinstances.classAttribute().value((int) majClass));
+					String predict = double2label(majClass);
+					System.out.println("Class of new instance is: " + predict);
+					lineCount = i +1;
+					if (lineCount == 1)
+						bw.write("TECHNOLOGY RESULT\n");
+					else if (lineCount == test_document_count / 3 + 1)
+						bw.write("EDUCATION RESULT\n");
+					else if (lineCount == 2 * test_document_count / 3 + 1)
+						bw.write("FASHTION RESULT\n");
+					String correctlabel = "";
+					correctlabel = string2label(correct_label[lineCount - 1]);
+					bw.write("Document " + lineCount + ": Predict: " + predict + " Correct: "
+							+ correctlabel + "\n");
+					if (predict.equalsIgnoreCase(correctlabel)) {
+						number_of_correct++;
+					}
+					if (lineCount == test_document_count / 3 || lineCount == 2 * test_document_count / 3
+							|| lineCount == test_document_count) {
+						bw.write("Final Result: " + number_of_correct + "/" + test_document_count / 3 + " - Accuracy: "
+								+ number_of_correct * 100 / (test_document_count / 3) + "%\n");
+						number_of_correct = 0;
+					}
+				}
+			bw.close();
+			
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	private void predict_knn() throws IOException {
+		try {
+			parseData();
+			File tech_listword = new File(f.getAbsolutePath() + "/data/testing/technology/tf-idf_listword.txt");
+			File edu_listword = new File(f.getAbsolutePath() + "/data/testing/education/tf-idf_listword.txt");
+			File fash_listword = new File(f.getAbsolutePath() + "/data/testing/healthy/tf-idf_listword.txt");
+			File fresult = new File(f.getAbsolutePath() + "/data/testing/result/knn_result_weka.txt");
+			List<String> query_word = new ArrayList<String>();
+			FileWriter fw;
+			BufferedWriter bw;
+			fw = new FileWriter(fresult.getAbsoluteFile());
+			bw = new BufferedWriter(fw);
+			
+			Reader r = new BufferedReader(new InputStreamReader(
+					new FileInputStream(f.getAbsolutePath() + "/data/trainning/data.arff"), "UTF-8"));
+			ArffReader arff = new ArffReader(r);
+			
+			Instances samples = arff.getData();
+			
+			samples.setClassIndex(0);
+			StringToWordVector filter = new StringToWordVector();
+            filter.setAttributeIndices("last");
+            FilteredClassifier new_classifier = new FilteredClassifier();
+            new_classifier.setFilter(filter);
+            new_classifier.setClassifier(new IBk());
+            new_classifier.buildClassifier(samples);
+            
+			r.close();
+			int lineCount = 0;
+			int number_of_correct = 0;
+			//--------------------------------------
+			try (BufferedReader br = new BufferedReader(new FileReader(tech_listword.getAbsoluteFile()))) {
+				String line;
+				// Vi tri dong
+				while ((line = br.readLine()) != null) {
+					// process the line.
+					query_word.add(line);	
+				}
+			}
+			try (BufferedReader br = new BufferedReader(new FileReader(edu_listword.getAbsoluteFile()))) {
+				String line;
+				// Vi tri dong
+				while ((line = br.readLine()) != null) {
+					// process the line.
+					query_word.add(line);
+				}
+			}
+			try (BufferedReader br = new BufferedReader(new FileReader(fash_listword.getAbsoluteFile()))) {
+				String line;
+				// Vi tri dong
+				while ((line = br.readLine()) != null) {
+					// process the line.
+					query_word.add(line);		
+				}
+			}
+			FastVector<String> fvNominalVal = new FastVector<String>(2);
+			fvNominalVal.addElement("technology");
+			fvNominalVal.addElement("education");
+			fvNominalVal.addElement("healthy");
+			Attribute attribute1 = new Attribute("class", fvNominalVal);
+			Attribute attribute2 = new Attribute("keyword",(FastVector<String>) null);
+			// Create list of instances with one element
+			FastVector<Attribute> fvWekaAttributes = new FastVector<Attribute>(2);
+			fvWekaAttributes.addElement(attribute1);
+			fvWekaAttributes.addElement(attribute2);
+			Instances newinstances = new Instances("document_classify", fvWekaAttributes, 1);           
+			newinstances.setClassIndex(0);
+			for (int i = 0; i < test_document_count; i++) {
+				DenseInstance instance = new DenseInstance(2);
+				instance.setValue(attribute2, query_word.get(i));
+				instance.setDataset(newinstances);
+				newinstances.add(instance); 
+			}
+			StringToWordVector testfilter = new StringToWordVector();
+			testfilter.setAttributeIndices("last");
+			testfilter.setInputFormat(newinstances);
+			Instances filteredData = Filter.useFilter(newinstances, filter);
+			//System.out.println(newinstances);
+			System.out.println(filteredData);
+			//--------------------------------------
+			for (int i = 0; i < test_document_count; i++) {
+					// Process
+					double majClass = new_classifier.classifyInstance(newinstances.instance(i));
+					System.out.println(newinstances.instance(i).stringValue(1));
+					System.out.println("===== Classified instance =====");
+					System.out.println("Class predicted: " + newinstances.classAttribute().value((int) majClass));
+					String predict = double2label(majClass);
+					System.out.println("Class of new instance is: " + predict);
+					lineCount = i +1;
+					if (lineCount == 1)
+						bw.write("TECHNOLOGY RESULT\n");
+					else if (lineCount == test_document_count / 3 + 1)
+						bw.write("EDUCATION RESULT\n");
+					else if (lineCount == 2 * test_document_count / 3 + 1)
+						bw.write("FASHTION RESULT\n");
+					String correctlabel = "";
+					correctlabel = string2label(correct_label[lineCount - 1]);
+					bw.write("Document " + lineCount + ": Predict: " + predict + " Correct: "
+							+ correctlabel + "\n");
+					if (predict.equalsIgnoreCase(correctlabel)) {
+						number_of_correct++;
+					}
+					if (lineCount == test_document_count / 3 || lineCount == 2 * test_document_count / 3
+							|| lineCount == test_document_count) {
+						bw.write("Final Result: " + number_of_correct + "/" + test_document_count / 3 + " - Accuracy: "
+								+ number_of_correct * 100 / (test_document_count / 3) + "%\n");
+						number_of_correct = 0;
+					}
+				}
+			bw.close();
+			
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	private void predict_svm() throws IOException {
+		try {
+			parseData();
+			File tech_listword = new File(f.getAbsolutePath() + "/data/testing/technology/tf-idf_listword.txt");
+			File edu_listword = new File(f.getAbsolutePath() + "/data/testing/education/tf-idf_listword.txt");
+			File fash_listword = new File(f.getAbsolutePath() + "/data/testing/healthy/tf-idf_listword.txt");
+			File fresult = new File(f.getAbsolutePath() + "/data/testing/result/svm_result_weka.txt");
+			List<String> query_word = new ArrayList<String>();
+			FileWriter fw;
+			BufferedWriter bw;
+			fw = new FileWriter(fresult.getAbsoluteFile());
+			bw = new BufferedWriter(fw);
+			
+			Reader r = new BufferedReader(new InputStreamReader(
+					new FileInputStream(f.getAbsolutePath() + "/data/trainning/data.arff"), "UTF-8"));
+			ArffReader arff = new ArffReader(r);
+			
+			Instances samples = arff.getData();
+			
+			samples.setClassIndex(0);
+			StringToWordVector filter = new StringToWordVector();
+            filter.setAttributeIndices("last");
+            FilteredClassifier new_classifier = new FilteredClassifier();
+            new_classifier.setFilter(filter);
+            new_classifier.setClassifier(new SMO());
+            new_classifier.buildClassifier(samples);
+            
+			r.close();
+			int lineCount = 0;
+			int number_of_correct = 0;
+			//--------------------------------------
+			try (BufferedReader br = new BufferedReader(new FileReader(tech_listword.getAbsoluteFile()))) {
+				String line;
+				// Vi tri dong
+				while ((line = br.readLine()) != null) {
+					// process the line.
+					query_word.add(line);	
+				}
+			}
+			try (BufferedReader br = new BufferedReader(new FileReader(edu_listword.getAbsoluteFile()))) {
+				String line;
+				// Vi tri dong
+				while ((line = br.readLine()) != null) {
+					// process the line.
+					query_word.add(line);
+				}
+			}
+			try (BufferedReader br = new BufferedReader(new FileReader(fash_listword.getAbsoluteFile()))) {
+				String line;
+				// Vi tri dong
+				while ((line = br.readLine()) != null) {
+					// process the line.
+					query_word.add(line);		
+				}
+			}
+			FastVector<String> fvNominalVal = new FastVector<String>(2);
+			fvNominalVal.addElement("technology");
+			fvNominalVal.addElement("education");
+			fvNominalVal.addElement("healthy");
+			Attribute attribute1 = new Attribute("class", fvNominalVal);
+			Attribute attribute2 = new Attribute("keyword",(FastVector<String>) null);
+			// Create list of instances with one element
+			FastVector<Attribute> fvWekaAttributes = new FastVector<Attribute>(2);
+			fvWekaAttributes.addElement(attribute1);
+			fvWekaAttributes.addElement(attribute2);
+			Instances newinstances = new Instances("document_classify", fvWekaAttributes, 1);           
+			newinstances.setClassIndex(0);
+			for (int i = 0; i < test_document_count; i++) {
+				DenseInstance instance = new DenseInstance(2);
+				instance.setValue(attribute2, query_word.get(i));
+				instance.setDataset(newinstances);
+				newinstances.add(instance); 
+			}
+			System.out.println(newinstances);
+
+			//--------------------------------------
+			for (int i = 0; i < test_document_count; i++) {
+					// Process
+					double majClass = new_classifier.classifyInstance(newinstances.instance(i));
+					System.out.println(newinstances.instance(i).stringValue(1));
+					System.out.println("===== Classified instance =====");
+					System.out.println("Class predicted: " + newinstances.classAttribute().value((int) majClass));
+					String predict = double2label(majClass);
+					System.out.println("Class of new instance is: " + predict);
+					lineCount = i +1;
+					if (lineCount == 1)
+						bw.write("TECHNOLOGY RESULT\n");
+					else if (lineCount == test_document_count / 3 + 1)
+						bw.write("EDUCATION RESULT\n");
+					else if (lineCount == 2 * test_document_count / 3 + 1)
+						bw.write("FASHTION RESULT\n");
+					String correctlabel = "";
+					correctlabel = string2label(correct_label[lineCount - 1]);
+					bw.write("Document " + lineCount + ": Predict: " + predict + " Correct: "
+							+ correctlabel + "\n");
+					if (predict.equalsIgnoreCase(correctlabel)) {
+						number_of_correct++;
+					}
+					if (lineCount == test_document_count / 3 || lineCount == 2 * test_document_count / 3
+							|| lineCount == test_document_count) {
+						bw.write("Final Result: " + number_of_correct + "/" + test_document_count / 3 + " - Accuracy: "
+								+ number_of_correct * 100 / (test_document_count / 3) + "%\n");
+						number_of_correct = 0;
+					}
+				}
+			bw.close();
+			
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	private void creatematrix_svm() throws IOException {
-		// Đọc lần lược 3 file list word
-		// Mỗi lần đọc một dòng thì so sánh với totaltrainningkey và tạo ra
-		// vector nhị phân
-		// Đồng thời, ghi lại label của vector đó ở 1 file khác
-		// và ghi ra 1 file vừa label vừa vector cho svm
-		//
 		List<String> list_allkeyword = new ArrayList<String>();
-		File tech_listword = new File(f.getAbsolutePath() + "/data/testing/technology/listword.txt");
-		File edu_listword = new File(f.getAbsolutePath() + "/data/testing/education/listword.txt");
-		File fash_listword = new File(f.getAbsolutePath() + "/data/testing/healthy/listword.txt");
+		File tech_listword = new File(f.getAbsolutePath() + "/data/testing/technology/tf-idf_listword.txt");
+		File edu_listword = new File(f.getAbsolutePath() + "/data/testing/education/tf-idf_listword.txt");
+		File fash_listword = new File(f.getAbsolutePath() + "/data/testing/healthy/tf-idf_listword.txt");
 		File all_key = new File(f.getAbsolutePath() + "/data/trainning/allkeyword.txt");
 		File fsvm_matrix = new File(f.getAbsolutePath() + "/data/testing/test_svm_matrix.txt");
 		FileWriter fw;
@@ -861,9 +1210,9 @@ public class predictData {
 		// Add function check label of predict with correct label and print
 		// result
 		List<String> ldalist = new ArrayList<String>();
-		File train_tech_listword = new File(f.getAbsolutePath() + "/data/trainning/technology/listword.txt");
-		File train_edu_listword = new File(f.getAbsolutePath() + "/data/trainning/education/listword.txt");
-		File train_fash_listword = new File(f.getAbsolutePath() + "/data/trainning/healthy/listword.txt");
+		File train_tech_listword = new File(f.getAbsolutePath() + "/data/trainning/technology/tf-idf_listword.txt");
+		File train_edu_listword = new File(f.getAbsolutePath() + "/data/trainning/education/tf-idf_listword.txt");
+		File train_fash_listword = new File(f.getAbsolutePath() + "/data/trainning/healthy/tf-idf_listword.txt");
 		try (BufferedReader br = new BufferedReader(new FileReader(train_tech_listword.getAbsoluteFile()))) {
 			String line;
 			// Vi tri dong
@@ -878,7 +1227,6 @@ public class predictData {
 			// Vi tri dong
 			while ((line = br.readLine()) != null) {
 				// process the line.
-				String[] listword = line.split(" ");
 				ldalist.add(line);
 			}
 		}
@@ -890,9 +1238,9 @@ public class predictData {
 				ldalist.add(line);
 			}
 		}
-		File test_tech_listword = new File(f.getAbsolutePath() + "/data/testing/technology/listword.txt");
-		File test_edu_listword = new File(f.getAbsolutePath() + "/data/testing/education/listword.txt");
-		File test_fash_listword = new File(f.getAbsolutePath() + "/data/testing/healthy/listword.txt");
+		File test_tech_listword = new File(f.getAbsolutePath() + "/data/testing/technology/tf-idf_listword.txt");
+		File test_edu_listword = new File(f.getAbsolutePath() + "/data/testing/education/tf-idf_listword.txt");
+		File test_fash_listword = new File(f.getAbsolutePath() + "/data/testing/healthy/tf-idf_listword.txt");
 		try (BufferedReader br = new BufferedReader(new FileReader(test_tech_listword.getAbsoluteFile()))) {
 			String line;
 			// Vi tri dong
@@ -918,7 +1266,7 @@ public class predictData {
 				ldalist.add(line);
 			}
 		}
-		File ldalistword = new File(f.getAbsolutePath() + "/data/testing/lda_list.txt");
+		File ldalistword = new File(f.getAbsolutePath() + "/data/testing/lda_result/lda_list.txt");
 		FileWriter fw;
 		BufferedWriter bw;
 		fw = new FileWriter(ldalistword.getAbsoluteFile());
@@ -928,11 +1276,11 @@ public class predictData {
 			bw.write("\n");
 		}
 		bw.close();
-		double alpha = 0.1D;
-		double beta = 0.01D;
+		double alpha = 0.1653D;
+		double beta = 0.05435D;
 		int numTopics = 3;
 		int numIterations = 200;
-		int topWords = 20;
+		int topWords = 100;
 		int savestep = 0;
 		String expName = "model";
 		String corpusPath = f.getAbsolutePath() + "/data/testing/lda_result/lda_list.txt";
@@ -1018,14 +1366,18 @@ public class predictData {
 		convert_to_vector(heal_doc, "healthy");
 	}
 
-	public void FpredictData() throws Exception {
-		predictData pd = new predictData();
-		pd.prepareData();
-		// pd.knn_predict();
-		// pd.svm_trainning();
-		pd.svm_predict();
-		pd.parseData();
-		pd.lda_predict();
-		pd.lda_result();
+	public void FpredictData(nlplib lib) throws Exception {
+		this.lib = lib;
+		f = new File(".");
+		//stopword();
+		//prepareData();
+		//knn_predict();
+		//svm_trainning();
+		//svm_predict();
+		predict_bayes();
+		predict_svm();
+		predict_knn();
+		//lda_predict();
+		//lda_result();
 	}
 }

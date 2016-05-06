@@ -4,19 +4,23 @@ import java.io.IOException;
 
 import makedata.CreateData;
 import predictdata.predictData;
+import tools.nlplib;
 
 public class Document_Classification {
-	private predictData pd;
-	private CreateData cd;
+	private predictData predict;
+	private CreateData create;
+	private static nlplib lib;
+
 
 	public Document_Classification() throws IOException {
-		cd = new CreateData();
-		pd = new predictData();
+		create = new CreateData();
+		predict = new predictData();
+		lib = new nlplib();
 	}
 
 	public static void main(String[] args) throws Exception {
 		Document_Classification document_classify = new Document_Classification();
-		document_classify.cd.FcreateData();
-		document_classify.pd.FpredictData();
+		document_classify.create.FcreateData(lib);
+		document_classify.predict.FpredictData(lib);
 	}
 }

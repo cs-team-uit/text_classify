@@ -15,12 +15,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
-import jvntagger.MaxentTagger;
-import models.GibbsSamplingLDA;
-import vn.hus.nlp.sd.SentenceDetector;
-import vn.hus.nlp.tokenizer.VietTokenizer;
+import tools.nlplib;
 
 public class CreateData {
 	public static final String TECH_DOC_PATH = "/data/documents/train_data/technology/";
@@ -30,37 +26,38 @@ public class CreateData {
 	private List<String> tech_doc = new ArrayList<String>();
 	private List<String> edu_doc = new ArrayList<String>();
 	private List<String> heal_doc = new ArrayList<String>();
-	int document_count = 3600;
+	
+	int document_count = 100*3;
+	int all_keyword_size;
+	
 	public File f;
-	public spellchecker sc;
-	SentenceDetector detector;
-	VietTokenizer tokenizer;
-	MaxentTagger tagger;
-	GibbsSamplingLDA LDA;
+	nlplib lib;
 
-	String sentence[] = new String[256];
+	String[] sentence = new String[256];
 	String[] wordsplit = new String[sentence.length];
-	// Create array that store every word after split by space
 	String[] wordtagger = new String[sentence.length];
-	// Store in array
 	String[] word = new String[256];
-
 	String[] type_tagger = new String[10];
-
+	
 	List<String> temp_wordoffile = new ArrayList<String>();
 	List<String> wordoffile = new ArrayList<String>();
+	List<String> lstopword = new ArrayList<String>();
+	
 
-	int all_keyword_size;
-
-	// int[] knn_label;
-
-	public CreateData() throws IOException {
+	public CreateData() {
 		f = new File(".");
-		detector = new SentenceDetector(
-				f.getAbsolutePath() + "/data/tools/NLPTools/models/sentDetection/VietnameseSD.bin.gz");
-		tokenizer = new VietTokenizer(f.getAbsolutePath() + "/data/tools/NLPTools/tokenizer.properties");
-		tagger = new MaxentTagger(f.getAbsolutePath() + "/data/tools/NLPTools/model/maxent");
-		sc = new spellchecker();
+	}
+	public class Weight {
+		private String word;
+		private double weight;
+		public Weight() {
+			this.word = "";
+			this.weight = 0;
+		}
+		public Weight(String word, double weight) {
+			this.word = word;
+			this.weight = weight;
+		}
 	}
 
 	public void readFile() {
@@ -90,19 +87,10 @@ public class CreateData {
 			}
 		}
 	}
-
-	// public void spellCheckandRepair() {
-	// // Spelling Check Technology Document
-	// sc.doCheck(tech_doc);
-	// sc.doCheck(edu_doc);
-	// sc.doCheck(fash_doc);
-	// }
-
 	public String[] sentSlipt(String vb) {
 		String[] ret = null;
 		try {
-
-			ret = detector.sentDetect(vb);
+			ret = lib.detector.sentDetect(vb);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -111,14 +99,14 @@ public class CreateData {
 
 	public String wordslipt(String cau) {
 		String ret = null;
-		ret = tokenizer.segment(cau);
+		ret = lib.tokenizer.segment(cau);
 		return ret;
 	}
 
 	public String tagger(String sentence) {
 		String ret = null;
 
-		ret = tagger.tagging(sentence);
+		ret = lib.tagger.tagging(sentence);
 		return ret;
 	}
 
@@ -145,24 +133,20 @@ public class CreateData {
 		type_tagger[5] = "/N";
 		type_tagger[6] = "/V";
 	}
-
-	public boolean isAlpha(String name) {
-		char[] chars = name.toCharArray();
-
-		for (char c : chars) {
-			if (!Character.isLetter(c)) {
-				return false;
+	public void stopword() throws FileNotFoundException, IOException {
+		File stopword = new File(f.getAbsolutePath() + "/data/stopword.txt");
+		try (BufferedReader br = new BufferedReader(new FileReader(stopword))) {
+			for (String line; (line = br.readLine()) != null;) {
+				// process the line.
+				lstopword.add(line);
 			}
 		}
-
-		return true;
 	}
-
 	public void extractWord(List<String> list_doc, String doc_type) throws FileNotFoundException, IOException {
 		try {
 			FileWriter fw;
 			BufferedWriter bw = null;
-			File temp = new File(f.getAbsolutePath() + "/data/trainning/" + doc_type + "/temp_listword.txt");
+			File temp = new File(f.getAbsolutePath() + "/data/trainning/" + doc_type + "/raw_listword.txt");
 			fw = new FileWriter(temp.getAbsoluteFile());
 			bw = new BufferedWriter(fw);
 			FileWriter fwl;
@@ -170,9 +154,8 @@ public class CreateData {
 			set_typetagger();
 
 			for (Iterator<String> i = list_doc.iterator(); i.hasNext();) {
-				// Get file dir
 				temp_wordoffile.clear();
-				wordoffile.clear();
+				
 
 				String file = i.next();
 				for (int time_run = 0; time_run < 1; time_run++) {
@@ -188,7 +171,10 @@ public class CreateData {
 							// process the line.
 							String[] listword = line.split(" ");
 							for (int x = 0; x < listword.length; x++) {
-								if (listword[x].contains(".")) {
+								if (lstopword.contains(listword[x])) {
+									continue;
+								}
+								else if (listword[x].contains(".")) {
 									if (listword[x].indexOf(".") + 1 == listword[x].length()) {
 										bwl.write(listword[x] + " ");
 										continue;
@@ -222,11 +208,12 @@ public class CreateData {
 					bwl.close();
 					if (orifile.exists())
 						orifile.delete();
-
 					// Rename file (or directory)
 					preprocessing.renameTo(orifile);
+					if (preprocessing.exists()) 
+						preprocessing.renameTo(orifile);
 				}
-				sc.doCheck(file);
+				//sc.doCheck(file);
 				// Read all text and split sentence then save to array
 				InputStream is = null;
 				is = new FileInputStream(file);
@@ -242,12 +229,8 @@ public class CreateData {
 					// Store every word splited to array
 					if (wtag != null) {
 						word = wtag.split(" ");
-						boolean isChoose = false; // Xac nhan word da dc xet
-													// va
-													// dc
-													// chon
+						boolean isChoose = false; 
 						for (int x = 0; x < word.length; x++) {
-
 							for (String typtag : type_tagger) {
 								// Type filter
 								if (typtag != null) {
@@ -265,9 +248,6 @@ public class CreateData {
 								} else
 									break;
 							}
-							// If chua co trong csdl, them vao , nguoc lai
-							// bo
-							// qua
 							if (!temp_wordoffile.contains(word[x])) {
 								if (isChoose == true) {
 									// Them vao csdl
@@ -287,15 +267,12 @@ public class CreateData {
 					bw.write(temp_wordoffile.get(k) + " ");
 				}
 				bw.write("\n");
-
 			}
 			bw.close();
 		} catch (
-
 		IOException e) {
 			System.out.println("IOException Occured! ");
 			e.printStackTrace();
-			// System.exit(-1);
 		}
 	}
 
@@ -308,31 +285,22 @@ public class CreateData {
 		}
 		return count;
 	}
-
-	public void swapWeight(double a, double b) {
-		double temp = a;
-		a = b;
-		b = temp;
-	}
-
-	public void swapString(String a, String b) {
-		AtomicReference<String> String1 = new AtomicReference<String>(a);
-		AtomicReference<String> String2 = new AtomicReference<String>(b);
-		String1.set(String2.getAndSet(String1.get()));
-
-	}
-
 	public void calcVSM(String doc_type) {
 		try {
-			FileWriter fw;
-			BufferedWriter bw;
+			FileWriter fw_listword;
+			BufferedWriter bw_listword;
+			FileWriter fw_weight;
+			BufferedWriter bw_weight;
 			set_typetagger();
 
-			File flistword = new File(f.getAbsolutePath() + "/data/trainning/" + doc_type + "/listword.txt");
-			fw = new FileWriter(flistword.getAbsoluteFile());
-			bw = new BufferedWriter(fw);
-			String file = f.getAbsolutePath() + "/data/trainning/" + doc_type + "/temp_listword.txt";
-
+			File flistword = new File(f.getAbsolutePath() + "/data/trainning/" + doc_type + "/tf-idf_listword.txt");
+			fw_listword = new FileWriter(flistword.getAbsoluteFile());
+			bw_listword = new BufferedWriter(fw_listword);
+			String file = f.getAbsolutePath() + "/data/trainning/" + doc_type + "/raw_listword.txt";
+			
+			File fwordweight = new File(f.getAbsolutePath() + "/data/trainning/" + doc_type + "/weight.txt");
+			fw_weight = new FileWriter(fwordweight.getAbsoluteFile());
+			bw_weight = new BufferedWriter(fw_weight);
 			double[] tf;
 			double[] idf;
 			double[] weight;
@@ -343,10 +311,7 @@ public class CreateData {
 					// process the line.
 					documents.add(line);
 				}
-				// line is not visible here.
 			}
-			AtomicReference<String> String1;
-			AtomicReference<String> String2;
 			for (String doc : documents) {
 				if (doc != null) {
 					word = doc.split(" ");
@@ -370,65 +335,112 @@ public class CreateData {
 								double temp = weight[j - 1];
 								weight[j - 1] = weight[j];
 								weight[j] = temp;
-								String1 = new AtomicReference<String>(word[j - 1]);
-								String2 = new AtomicReference<String>(word[j]);
-								String1.set(String2.getAndSet(String1.get()));
-								word[j - 1] = String1.get();
-								word[j] = String2.get();
+								String wtemp = word[j-1];
+								word[j-1] = word[j];
+								word[j] = wtemp;
 							}
-					for (int k = 0; k < 40; k++) {
-						bw.write(word[k] + " ");
+					int max = 20;
+					for (int k = 0; k < max; k++) {
+						bw_listword.write(word[k] + " ");
 					}
-					bw.write("\n");
+					for (int k = 0; k < max; k++) {
+						bw_weight.write(weight[k] + " ");
+					}
+					bw_listword.write("\n");
+					bw_weight.write("\n");
 				}
 			}
-			bw.close();
+			bw_listword.close();
+			bw_weight.close();
 		} catch (
 
 		IOException e) {
 			System.out.println("IOException Occured! ");
 			e.printStackTrace();
-			// System.exit(-1);
 		}
 	}
-
+	
 	/**
 	 * @param args
 	 *            get keyword of document type
 	 * @throws IOException
 	 */
 	public void getkeyword(String doc_type) throws IOException {
-		// Lưu cùng vị trí với file
 		List<String> doc_keyword = new ArrayList<String>();
 		FileWriter fw;
 		BufferedWriter bw;
-		File listofword = new File(f.getAbsolutePath() + "/data/trainning/" + doc_type + "/listword.txt");
+		File listofword = new File(f.getAbsolutePath() + "/data/trainning/" + doc_type + "/tf-idf_listword.txt");
+		File weightofword = new File(f.getAbsolutePath() + "/data/trainning/" + doc_type + "/weight.txt");
 		File keyword = new File(f.getAbsolutePath() + "/data/trainning/" + doc_type + "/keyword.txt");
 		fw = new FileWriter(keyword.getAbsoluteFile());
 		bw = new BufferedWriter(fw);
-
+		Weight[] word_weight;
+		word_weight = new Weight[document_count*10];
+		for (int i = 0; i < document_count*10; i++)
+		{
+			word_weight[i] = new Weight();
+			word_weight[i].weight = 0;
+			word_weight[i].word = "";
+		}
+		int index = 0;
 		try (BufferedReader br = new BufferedReader(new FileReader(listofword.getAbsoluteFile()))) {
 			String line;
 			while ((line = br.readLine()) != null) {
 				// process the line.
 				String[] listword = line.split(" ");
 				for (int x = 0; x < listword.length; x++) {
-					if (!doc_keyword.contains(listword[x])) {
-						doc_keyword.add(listword[x]);
-					}
+					word_weight[index].word = listword[x];
+					index++;
 				}
 
 			}
 		}
-		for (int k = 0; k < doc_keyword.size(); k++) {
-			bw.write(doc_keyword.get(k) + " ");
+		index = 0;
+		try (BufferedReader br = new BufferedReader(new FileReader(weightofword.getAbsoluteFile()))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				// process the line.
+				String[] listword = line.split(" ");
+				for (int x = 0; x < listword.length; x++) {
+					word_weight[index].weight = Double.parseDouble(listword[x]);
+					index++;
+				}
+
+			}
+		}
+		index = 0;
+		//Kiem tra lai danh sach de loai tu trung lap
+		try (BufferedReader br = new BufferedReader(new FileReader(listofword.getAbsoluteFile()))) {
+			String line;
+			int line_index = 0;
+			while ((line = br.readLine()) != null) {
+				// process the line.
+				String[] listword = line.split(" ");
+				for (int x = 0; x < listword.length; x++) {
+					if (doc_keyword.contains(listword[x])) { //Neu da ton tai thi xoa
+						word_weight[line_index*10 + x].weight = 0;
+						word_weight[line_index*10 + x].weight = 0;
+					}
+				}
+				line_index++;
+			}
+		}
+		//Sap xep
+		for (int i = 0; i < document_count*10 - 1; i++)
+			for (int j = document_count*10 - 1; j > i; j--)
+				if (word_weight[j].weight > word_weight[j-1].weight) {
+					Weight temp = word_weight[j-1];
+					word_weight[j-1] = word_weight[j];
+					word_weight[j] = temp;
+				}
+		for (int k = 0; k < 300; k++) {
+			bw.write(word_weight[k].word + " ");
 		}
 		bw.close();
 
 	}
 
 	public void maketrainningkey() throws FileNotFoundException, IOException {
-		// Đọc 3 file mà tạo ra 1 file keyword chung
 		File tech_key = new File(f.getAbsolutePath() + "/data/trainning/technology/keyword.txt");
 		File edu_key = new File(f.getAbsolutePath() + "/data/trainning/education/keyword.txt");
 		File fash_key = new File(f.getAbsolutePath() + "/data/trainning/healthy/keyword.txt");
@@ -476,7 +488,6 @@ public class CreateData {
 						all_keyword.add(listword[x]);
 					}
 				}
-
 			}
 		}
 		for (int k = 0; k < all_keyword.size(); k++) {
@@ -486,35 +497,93 @@ public class CreateData {
 		bw.close();
 
 	}
+	public void create_naive_bayes() throws IOException {
+		File tech_listword = new File(f.getAbsolutePath() + "/data/trainning/technology/tf-idf_listword.txt");
+		File edu_listword = new File(f.getAbsolutePath() + "/data/trainning/education/tf-idf_listword.txt");
+		File fash_listword = new File(f.getAbsolutePath() + "/data/trainning/healthy/tf-idf_listword.txt");
+		File bayes_matrix = new File(f.getAbsolutePath() + "/data/trainning/data.arff");
+		FileWriter fw;
+		BufferedWriter bw;
+		fw = new FileWriter(bayes_matrix.getAbsoluteFile());
+		bw = new BufferedWriter(fw);
 
+		bw.write("@relation document_classify\n");
+		bw.write("@attribute class {technology, education, healthy}\n");
+		bw.write("@attribute keyword string\n");
+		bw.write("@data\n");
+
+		try (BufferedReader br = new BufferedReader(new FileReader(tech_listword.getAbsoluteFile()))) {
+			String line;
+			// Vi tri dong
+			while ((line = br.readLine()) != null) {
+				// process the line.
+				String[] listword = line.split(" ");
+				bw.write("technology,'");
+				for (int x = 0; x < listword.length; x++) {
+					bw.write(listword[x]);
+					if (x < listword.length - 1)
+						bw.write(", ");
+					else if (x == listword.length - 1)
+						bw.write("'");
+				}
+				bw.write("\n");
+
+			}
+		}
+		try (BufferedReader br = new BufferedReader(new FileReader(edu_listword.getAbsoluteFile()))) {
+			String line;
+			// Vi tri dong
+			while ((line = br.readLine()) != null) {
+				// process the line.
+				String[] listword = line.split(" ");
+				bw.write("education,'");
+				for (int x = 0; x < listword.length; x++) {
+					bw.write(listword[x]);
+					if (x < listword.length - 1)
+						bw.write(", ");
+					else if (x == listword.length - 1)
+						bw.write("'");
+				}
+				bw.write("\n");
+
+			}
+		}
+		try (BufferedReader br = new BufferedReader(new FileReader(fash_listword.getAbsoluteFile()))) {
+			String line;
+			// Vi tri dong
+			while ((line = br.readLine()) != null) {
+				// process the line.
+				String[] listword = line.split(" ");
+				bw.write("healthy,'");
+				for (int x = 0; x < listword.length; x++) {
+					bw.write(listword[x]);
+					if (x < listword.length - 1)
+						bw.write(", ");
+					else if (x == listword.length - 1)
+						bw.write("'");
+				}
+				bw.write("\n");
+			}
+		}
+		bw.close();
+	}
 	public void creatematrix_knn() throws FileNotFoundException, IOException {
-		// Đọc lần lược 3 file list word
-		// Mỗi lần đọc một dòng thì so sánh với totaltrainningkey và tạo ra
-		// vector nhị phân
-		// Đồng thời, ghi lại label của vector đó ở 1 file khác
-		// và ghi ra 1 file vừa label vừa vector cho svm
-		//
-		// Đưa all_keyword vao list
-		// Đọc lần lượt từng file
-		// Đọc từng dòng, kiểm tra xem word trong file đó có ở chỗ nào của list
-		// Vị trí có = 1 , không có thì bằng 0
-		// Ghi label vào 1 file khác
 		List<String> list_allkeyword = new ArrayList<String>();
-		File tech_listword = new File(f.getAbsolutePath() + "/data/trainning/technology/listword.txt");
-		File edu_listword = new File(f.getAbsolutePath() + "/data/trainning/education/listword.txt");
-		File fash_listword = new File(f.getAbsolutePath() + "/data/trainning/healthy/listword.txt");
+		File tech_listword = new File(f.getAbsolutePath() + "/data/trainning/technology/tf-idf_listword.txt");
+		File edu_listword = new File(f.getAbsolutePath() + "/data/trainning/education/tf-idf_listword.txt");
+		File fash_listword = new File(f.getAbsolutePath() + "/data/trainning/healthy/tf-idf_listword.txt");
 		File all_key = new File(f.getAbsolutePath() + "/data/trainning/allkeyword.txt");
 		File fknn_matrix = new File(f.getAbsolutePath() + "/data/trainning/knn_matrix.txt");
 		File fknn_label = new File(f.getAbsolutePath() + "/data/trainning/knn_label.txt");
-		FileWriter fw;
-		BufferedWriter bw;
-		fw = new FileWriter(fknn_matrix.getAbsoluteFile());
-		bw = new BufferedWriter(fw);
+		FileWriter fw_matrix;
+		BufferedWriter bw_matrix;
+		fw_matrix = new FileWriter(fknn_matrix.getAbsoluteFile());
+		bw_matrix = new BufferedWriter(fw_matrix);
 
-		FileWriter fwl;
-		BufferedWriter bwl;
-		fwl = new FileWriter(fknn_label.getAbsoluteFile());
-		bwl = new BufferedWriter(fwl);
+		FileWriter fw_label;
+		BufferedWriter bw_label;
+		fw_label = new FileWriter(fknn_label.getAbsoluteFile());
+		bw_label = new BufferedWriter(fw_label);
 		try (BufferedReader br = new BufferedReader(new FileReader(all_key.getAbsoluteFile()))) {
 			String line;
 			while ((line = br.readLine()) != null) {
@@ -582,13 +651,13 @@ public class CreateData {
 			int k = 2 * document_count / 3;
 			while ((line = br.readLine()) != null) {
 				// process the line.
+				if (k == document_count) break;
 				String[] listword = line.split(" ");
 				for (int x = 0; x < listword.length; x++) {
 					int index = list_allkeyword.indexOf(listword[x]);
 					if (index != -1) {
 						knn_matrix[k][index] = 1;
 					}
-
 				}
 				knn_label[k] = 3;
 				k++;
@@ -596,34 +665,29 @@ public class CreateData {
 		}
 		for (int i = 0; i < document_count; i++) {
 			for (int j = 0; j < all_keyword_size; j++) {
-				bw.write(Integer.toString(knn_matrix[i][j]) + " ");
+				bw_matrix.write(Integer.toString(knn_matrix[i][j]) + " ");
 				if (j == all_keyword_size - 1)
-					bw.write("\n");
+					bw_matrix.write("\n");
 			}
 		}
 		for (int i = 0; i < document_count; i++)
-			bwl.write(Integer.toString(knn_label[i]) + "\n");
-		bw.close();
-		bwl.close();
+			bw_label.write(Integer.toString(knn_label[i]) + "\n");
+		bw_matrix.close();
+		bw_label.close();
 	}
 
 	public void creatematrix_svm() throws IOException {
-		// Đọc lần lược 3 file list word
-		// Mỗi lần đọc một dòng thì so sánh với totaltrainningkey và tạo ra
-		// vector nhị phân
-		// Đồng thời, ghi lại label của vector đó ở 1 file khác
-		// và ghi ra 1 file vừa label vừa vector cho svm
 		//
 		List<String> list_allkeyword = new ArrayList<String>();
-		File tech_listword = new File(f.getAbsolutePath() + "/data/trainning/technology/listword.txt");
-		File edu_listword = new File(f.getAbsolutePath() + "/data/trainning/education/listword.txt");
-		File fash_listword = new File(f.getAbsolutePath() + "/data/trainning/healthy/listword.txt");
+		File tech_listword = new File(f.getAbsolutePath() + "/data/trainning/technology/tf-idf_listword.txt");
+		File edu_listword = new File(f.getAbsolutePath() + "/data/trainning/education/tf-idf_listword.txt");
+		File fash_listword = new File(f.getAbsolutePath() + "/data/trainning/healthy/tf-idf_listword.txt");
 		File all_key = new File(f.getAbsolutePath() + "/data/trainning/allkeyword.txt");
 		File fsvm_matrix = new File(f.getAbsolutePath() + "/data/trainning/svm_matrix.txt");
-		FileWriter fw;
-		BufferedWriter bw;
-		fw = new FileWriter(fsvm_matrix.getAbsoluteFile());
-		bw = new BufferedWriter(fw);
+		FileWriter fw_matrix;
+		BufferedWriter bw_matrix;
+		fw_matrix = new FileWriter(fsvm_matrix.getAbsoluteFile());
+		bw_matrix = new BufferedWriter(fw_matrix);
 
 		try (BufferedReader br = new BufferedReader(new FileReader(all_key.getAbsoluteFile()))) {
 			String line;
@@ -642,14 +706,14 @@ public class CreateData {
 			while ((line = br.readLine()) != null) {
 				// process the line.
 				String[] listword = line.split(" ");
-				bw.write("1 ");
+				bw_matrix.write("1 ");
 				for (int x = 0; x < listword.length; x++) {
 					int index = list_allkeyword.indexOf(listword[x]);
 					if (index > 0) {
-						bw.write(index + ":1 ");
+						bw_matrix.write(index + ":1 ");
 					}
 				}
-				bw.write("\n");
+				bw_matrix.write("\n");
 
 			}
 		}
@@ -659,14 +723,14 @@ public class CreateData {
 			while ((line = br.readLine()) != null) {
 				// process the line.
 				String[] listword = line.split(" ");
-				bw.write("2 ");
+				bw_matrix.write("2 ");
 				for (int x = 0; x < listword.length; x++) {
 					int index = list_allkeyword.indexOf(listword[x]);
 					if (index > 0) {
-						bw.write(index + ":1 ");
+						bw_matrix.write(index + ":1 ");
 					}
 				}
-				bw.write("\n");
+				bw_matrix.write("\n");
 			}
 		}
 		try (BufferedReader br = new BufferedReader(new FileReader(fash_listword.getAbsoluteFile()))) {
@@ -675,44 +739,45 @@ public class CreateData {
 			while ((line = br.readLine()) != null) {
 				// process the line.
 				String[] listword = line.split(" ");
-				bw.write("3 ");
+				bw_matrix.write("3 ");
 				for (int x = 0; x < listword.length; x++) {
 					int index = list_allkeyword.indexOf(listword[x]);
 					if (index > 0) {
-						bw.write(index + ":1 ");
+						bw_matrix.write(index + ":1 ");
 					}
 				}
-				bw.write("\n");
+				bw_matrix.write("\n");
 			}
 		}
-		bw.close();
+		bw_matrix.close();
 
 	}
 
 	public void createTrainingData() throws IOException {
+		stopword();
 		extractWord(tech_doc, "technology");
 		extractWord(edu_doc, "education");
 		extractWord(heal_doc, "healthy");
 		calcVSM("technology");
 		calcVSM("education");
 		calcVSM("healthy");
-		getkeyword("technology");
-		getkeyword("education");
-		getkeyword("healthy");
-		maketrainningkey();
-		creatematrix_knn();
-		creatematrix_svm();
+		//getkeyword("technology");
+		//getkeyword("education");
+		//getkeyword("healthy");
+		//maketrainningkey();
+		//creatematrix_knn();
+		create_naive_bayes();
+		//creatematrix_svm();
 	}
 
 	/**
 	 * @param args
 	 * @throws IOException
 	 */
-	public void FcreateData() throws IOException {
-		CreateData credat = new CreateData();
-		credat.readFile();
-		// credat.spellCheckandRepair();
-		credat.createTrainingData();
+	public void FcreateData(nlplib lib) throws IOException {
+		this.lib = lib;
+		readFile();
+		//createTrainingData();
 	}
 
 }
