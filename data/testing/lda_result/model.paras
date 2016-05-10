@@ -1,0 +1,8 @@
+-model	LDA
+-corpus	C:\Users\Administrator\Downloads\text_classify-master\./data/testing/lda_result/lda_list.txt
+-ntopics	3
+-alpha	0.1653
+-beta	0.05435
+-niters	200
+-twords	100
+-name	model

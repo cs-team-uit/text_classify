@@ -1,0 +1,4 @@
+(ROOT (S (NP (NNP An)) (VP (RB đang) VP ((VP (VB xem)) (NP (NN thông_báo)))) (. .)))
+(ROOT (S (NP (NN trường)) (VP (RB đã) (VP (VP (VB thông_báo)) (NP (NP (NN điểm)) (PP (IN của) (NP (DET các) (NN môn)))))) (. .)))
+(ROOT (S (NP (NP (NN điểm)) (PP (IN của) (NP (NNP An)))) (VP (ADJP (RB không) (ADJP (ADJP (JJ tốt)) (RB lắm)))) (. .)))
+

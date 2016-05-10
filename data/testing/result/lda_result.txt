@@ -1,0 +1,96 @@
+TECHNOLOGY RESULT
+Document 1: Predict: 2 Correct: 1
+Document 2: Predict:  Correct: 1
+Document 3: Predict: 1 Correct: 1
+Document 4: Predict: 1 Correct: 1
+Document 5: Predict:  Correct: 1
+Document 6: Predict: 2 Correct: 1
+Document 7: Predict: 1 Correct: 1
+Document 8: Predict: 2 Correct: 1
+Document 9: Predict: 2 Correct: 1
+Document 10: Predict: 2 Correct: 1
+Document 11: Predict: 2 Correct: 1
+Document 12: Predict: 2 Correct: 1
+Document 13: Predict: 2 Correct: 1
+Document 14: Predict: 2 Correct: 1
+Document 15: Predict: 2 Correct: 1
+Document 16: Predict: 2 Correct: 1
+Document 17: Predict: 2 Correct: 1
+Document 18: Predict: 2 Correct: 1
+Document 19: Predict: 2 Correct: 1
+Document 20: Predict: 2 Correct: 1
+Document 21: Predict: 2 Correct: 1
+Document 22: Predict: 2 Correct: 1
+Document 23: Predict: 2 Correct: 1
+Document 24: Predict: 2 Correct: 1
+Document 25: Predict: 2 Correct: 1
+Document 26: Predict: 1 Correct: 1
+Document 27: Predict: 1 Correct: 1
+Document 28: Predict:  Correct: 1
+Document 29: Predict: 1 Correct: 1
+Document 30: Predict: 1 Correct: 1
+Final Result: 7/30 - Accuracy: 23%
+EDUCATION RESULT
+Document 31: Predict: 2 Correct: 2
+Document 32: Predict: 2 Correct: 2
+Document 33: Predict: 1 Correct: 2
+Document 34: Predict: 2 Correct: 2
+Document 35: Predict: 1 Correct: 2
+Document 36: Predict: 2 Correct: 2
+Document 37: Predict: 1 Correct: 2
+Document 38: Predict: 2 Correct: 2
+Document 39: Predict: 1 Correct: 2
+Document 40: Predict: 1 Correct: 2
+Document 41: Predict: 1 Correct: 2
+Document 42: Predict:  Correct: 2
+Document 43: Predict: 1 Correct: 2
+Document 44: Predict:  Correct: 2
+Document 45: Predict: 1 Correct: 2
+Document 46: Predict: 2 Correct: 2
+Document 47: Predict:  Correct: 2
+Document 48: Predict: 2 Correct: 2
+Document 49: Predict:  Correct: 2
+Document 50: Predict: 1 Correct: 2
+Document 51: Predict:  Correct: 2
+Document 52: Predict:  Correct: 2
+Document 53: Predict: 2 Correct: 2
+Document 54: Predict: 2 Correct: 2
+Document 55: Predict: 1 Correct: 2
+Document 56: Predict: 2 Correct: 2
+Document 57: Predict: 2 Correct: 2
+Document 58: Predict: 2 Correct: 2
+Document 59: Predict: 1 Correct: 2
+Document 60: Predict: 2 Correct: 2
+Final Result: 13/30 - Accuracy: 43%
+FASHTION RESULT
+Document 61: Predict:  Correct: 3
+Document 62: Predict: 2 Correct: 3
+Document 63: Predict:  Correct: 3
+Document 64: Predict: 2 Correct: 3
+Document 65: Predict:  Correct: 3
+Document 66: Predict: 1 Correct: 3
+Document 67: Predict:  Correct: 3
+Document 68: Predict: 2 Correct: 3
+Document 69: Predict: 2 Correct: 3
+Document 70: Predict:  Correct: 3
+Document 71: Predict: 2 Correct: 3
+Document 72: Predict: 1 Correct: 3
+Document 73: Predict: 1 Correct: 3
+Document 74: Predict:  Correct: 3
+Document 75: Predict: 2 Correct: 3
+Document 76: Predict: 2 Correct: 3
+Document 77: Predict: 2 Correct: 3
+Document 78: Predict:  Correct: 3
+Document 79: Predict:  Correct: 3
+Document 80: Predict: 1 Correct: 3
+Document 81: Predict:  Correct: 3
+Document 82: Predict:  Correct: 3
+Document 83: Predict:  Correct: 3
+Document 84: Predict: 2 Correct: 3
+Document 85: Predict: 2 Correct: 3
+Document 86: Predict:  Correct: 3
+Document 87: Predict:  Correct: 3
+Document 88: Predict: 1 Correct: 3
+Document 89: Predict: 1 Correct: 3
+Document 90: Predict: 1 Correct: 3
+Final Result: 0/30 - Accuracy: 0%
