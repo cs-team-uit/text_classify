@@ -1,8 +1,0 @@
--model	LDA
--corpus	/Volumes/Study/Project/text_classify/./data/testing/lda_list.txt
--ntopics	3
--alpha	0.1
--beta	0.01
--niters	200
--twords	20
--name	model
