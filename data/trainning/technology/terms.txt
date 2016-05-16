@@ -39,7 +39,7 @@ giao_diện
 hiển_thị
 màn_hình
 nexus
-xe_hơi
+xe_hơ
 xe_đạp
 máy_bay
 tên_lửa
@@ -66,3 +66,8 @@ lightning
 cảm_biến
 cài_đặt
 bảo_hành
+di_động
+video
+tính_năng
+màn_hình
+thiết_kế

@@ -66,3 +66,9 @@ khoáng_chất
 sinh_dục
 axit
 bệnh_nhân
+vệ_sinh
+bệnh_án
+viêm_xoang
+sức_khoẻ
+cơ_thể
+protein
