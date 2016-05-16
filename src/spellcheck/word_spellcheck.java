@@ -88,5 +88,4 @@ public class word_spellcheck {
 		return result;
 
 	}
-
 }

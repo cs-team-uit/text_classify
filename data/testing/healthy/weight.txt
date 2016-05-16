@@ -1,30 +1,30 @@
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
-Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity Infinity 
+10.0 10.0 10.0 10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 1.8750612633917 
+10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 1.8750612633917 1.7781512503836436 1.7781512503836436 1.7781512503836436 
+10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 1.8750612633917 1.7781512503836436 1.7781512503836436 1.7781512503836436 1.7781512503836436 
+10.0 10.0 10.0 10.0 10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 
+10.0 10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 1.8750612633917 1.7781512503836436 1.7781512503836436 
+10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 1.8750612633917 1.7781512503836436 1.7781512503836436 1.7781512503836436 
+10.0 10.0 10.0 10.0 10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 
+10.0 10.0 10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 1.8750612633917 1.7781512503836436 
+10.0 10.0 10.0 10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 1.8750612633917 
+10.0 10.0 10.0 10.0 10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 
+10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 1.8750612633917 1.7781512503836436 1.7781512503836436 1.7781512503836436 
+10.0 10.0 10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 1.8750612633917 1.7781512503836436 
+10.0 10.0 10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 1.8750612633917 1.7781512503836436 
+10.0 10.0 10.0 10.0 10.0 10.0 10.0 10.0 10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 
+10.0 10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 1.8750612633917 1.7781512503836436 1.7781512503836436 
+10.0 10.0 10.0 10.0 10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 
+10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 1.8750612633917 1.7781512503836436 1.7781512503836436 1.7781512503836436 
+10.0 10.0 10.0 10.0 10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 
+10.0 10.0 10.0 10.0 10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 
+10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 1.8750612633917 1.7781512503836436 1.7781512503836436 1.7781512503836436 
+10.0 10.0 10.0 10.0 10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 
+10.0 10.0 10.0 10.0 10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 
+10.0 10.0 10.0 10.0 10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 
+10.0 10.0 10.0 10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 1.8750612633917 
+10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 1.8750612633917 1.7781512503836436 1.7781512503836436 1.7781512503836436 1.6989700043360187 
+10.0 10.0 10.0 10.0 10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 
+10.0 10.0 10.0 10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 1.8750612633917 
+10.0 10.0 10.0 10.0 10.0 10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 
+10.0 10.0 10.0 10.0 10.0 10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 
+10.0 10.0 10.0 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.4771212547196626 2.1760912590556813 2.1760912590556813 2.0 2.0 1.8750612633917 1.7781512503836436 1.7781512503836436 

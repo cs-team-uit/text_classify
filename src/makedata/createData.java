@@ -31,7 +31,7 @@ public class createData {
 	int document_count = 100 * 3;
 	int all_keyword_size;
 	int doc_keyword_count = 500;
-	int numberword_count = 20;
+	int numberword_count = 15;
 
 	public File f;
 	nlplib lib;
@@ -178,9 +178,8 @@ public class createData {
 							// process the line.
 							String[] listword = line.split(" ");
 							for (int x = 0; x < listword.length; x++) {
-								if (lstopword.contains(listword[x])) {
-									continue;
-								} else if (listword[x].contains(".")) {
+
+								if (listword[x].contains(".")) {
 									if (listword[x].indexOf(".") + 1 == listword[x].length()) {
 										bwl.write(listword[x] + " ");
 										continue;
@@ -238,8 +237,7 @@ public class createData {
 						boolean isChoose = false;
 						for (int x = 0; x < word.length; x++) {
 							for (String typtag : type_tagger) {
-								String correct_word = lib.sc.check(word[x]);
-								word[x] = correct_word;
+
 								// Type filter
 								if (typtag != null) {
 									if (word[x].length() == 1)
@@ -253,15 +251,22 @@ public class createData {
 											&& word[x].length() > 3) {
 										word[x] = word[x].replace(typtag, "");
 										word[x] = word[x].toLowerCase();
+										String correct_word = lib.sc.check(word[x]);
+										word[x] = correct_word;
 										isChoose = true;
 										break;
 									}
+
 								} else
 									break;
 							}
 							if (!temp_wordoffile.contains(word[x])) {
 								if (isChoose == true) {
 									// Them vao csdl
+									if (lstopword.contains(word[x])) {
+										isChoose = false;
+										continue;
+									}
 									temp_wordoffile.add(word[x]);
 									isChoose = false;
 								}
@@ -317,9 +322,9 @@ public class createData {
 			// tf: so lan xuat hien cua 1 tu trong trong cung loai van ban
 			// idf log(toan bo van ban/so van ban trong cac loai khac chua tu)
 			// Technology
-			String techterm = f.getAbsolutePath() + "/data/trainning/" + ftech_doc + "/term.txt";
-			String eduterm = f.getAbsolutePath() + "/data/trainning/" + fedu_doc + "/term.txt";
-			String healterm = f.getAbsolutePath() + "/data/trainning/" + fheal_doc + "/term.txt";
+			String techterm = f.getAbsolutePath() + "/data/trainning/" + ftech_doc + "/terms.txt";
+			String eduterm = f.getAbsolutePath() + "/data/trainning/" + fedu_doc + "/terms.txt";
+			String healterm = f.getAbsolutePath() + "/data/trainning/" + fheal_doc + "/terms.txt";
 
 			File flistword = new File(f.getAbsolutePath() + "/data/trainning/" + ftech_doc + "/tf-idf_listword.txt");
 			fw_listword = new FileWriter(flistword.getAbsoluteFile());
@@ -341,37 +346,37 @@ public class createData {
 			try (BufferedReader br = new BufferedReader(new FileReader(mainlistword))) {
 				for (String line; (line = br.readLine()) != null;) {
 					// process the line.
-					documents.add(line);
+					documents.add(line.toLowerCase());
 				}
 			}
 			try (BufferedReader br = new BufferedReader(new FileReader(edulistword))) {
 				for (String line; (line = br.readLine()) != null;) {
 					// process the line.
-					otherdocuments.add(line);
+					otherdocuments.add(line.toLowerCase());
 				}
 			}
 			try (BufferedReader br = new BufferedReader(new FileReader(heallistword))) {
 				for (String line; (line = br.readLine()) != null;) {
 					// process the line.
-					otherdocuments.add(line);
+					otherdocuments.add(line.toLowerCase());
 				}
 			}
 			try (BufferedReader br = new BufferedReader(new FileReader(techterm))) {
 				for (String line; (line = br.readLine()) != null;) {
 					// process the line.
-					tech_term.add(line);
+					tech_term.add(line.toLowerCase());
 				}
 			}
 			try (BufferedReader br = new BufferedReader(new FileReader(eduterm))) {
 				for (String line; (line = br.readLine()) != null;) {
 					// process the line.
-					edu_term.add(line);
+					edu_term.add(line.toLowerCase());
 				}
 			}
 			try (BufferedReader br = new BufferedReader(new FileReader(healterm))) {
 				for (String line; (line = br.readLine()) != null;) {
 					// process the line.
-					heal_term.add(line);
+					heal_term.add(line.toLowerCase());
 				}
 			}
 			for (String doc : documents) {
@@ -399,12 +404,22 @@ public class createData {
 								numotherDocumentContain++;
 							}
 						}
-						idf[x] = Math.log10((double) document_count / (double) (numotherDocumentContain));
+						idf[x] = Math.log10((double) document_count / (double) (numotherDocumentContain + 1));
 						weight[x] = tf[x] * idf[x];
-						if (tech_term.contains(word[x]))
-							weight[x] = 10;
-						else if (edu_term.contains(word[x]) || heal_term.contains(word[x]))
-							weight[x] = 0;
+						String[] wordinterm = word[x].split("_");
+						for (String w : wordinterm) {
+							if (tech_term.contains(w.toLowerCase())) {
+								weight[x] = 10;
+								break;
+							} else if (edu_term.contains(w.toLowerCase()) || heal_term.contains(w.toLowerCase())) {
+								weight[x] = 0;
+								break;
+							} else {
+								weight[x] = tf[x] * idf[x];
+								continue;
+							}
+
+						}
 
 					}
 					for (int i = 0; i < word.length - 1; i++)
@@ -490,12 +505,19 @@ public class createData {
 								numotherDocumentContain++;
 							}
 						}
-						idf[x] = Math.log10((double) document_count / (double) (numotherDocumentContain));
+						idf[x] = Math.log10((double) document_count / (double) (numotherDocumentContain + 1));
 						weight[x] = tf[x] * idf[x];
-						if (edu_term.contains(word[x]))
-							weight[x] = 10;
-						else if (tech_term.contains(word[x]) || heal_term.contains(word[x]))
-							weight[x] = 0;
+						String[] wordinterm = word[x].split("_");
+						for (String w : wordinterm) {
+							if (edu_term.contains(w.toLowerCase())) {
+								weight[x] = 10;
+								break;
+							} else if (heal_term.contains(w.toLowerCase()) || tech_term.contains(w.toLowerCase())) {
+								weight[x] = 0;
+								break;
+							} else
+								continue;
+						}
 					}
 					for (int i = 0; i < word.length - 1; i++)
 						for (int j = word.length - 1; j > i; j--)
@@ -539,19 +561,19 @@ public class createData {
 			try (BufferedReader br = new BufferedReader(new FileReader(mainlistword))) {
 				for (String line; (line = br.readLine()) != null;) {
 					// process the line.
-					documents.add(line);
+					documents.add(line.toLowerCase());
 				}
 			}
 			try (BufferedReader br = new BufferedReader(new FileReader(techlistword))) {
 				for (String line; (line = br.readLine()) != null;) {
 					// process the line.
-					otherdocuments.add(line);
+					otherdocuments.add(line.toLowerCase());
 				}
 			}
 			try (BufferedReader br = new BufferedReader(new FileReader(edulistword))) {
 				for (String line; (line = br.readLine()) != null;) {
 					// process the line.
-					otherdocuments.add(line);
+					otherdocuments.add(line.toLowerCase());
 				}
 			}
 			for (String doc : documents) {
@@ -579,12 +601,20 @@ public class createData {
 								numotherDocumentContain++;
 							}
 						}
-						idf[x] = Math.log10((double) document_count / (double) (numotherDocumentContain));
+						idf[x] = Math.log10((double) document_count / (double) (numotherDocumentContain + 1));
 						weight[x] = tf[x] * idf[x];
-						if (heal_term.contains(word[x]))
-							weight[x] = 10;
-						else if (edu_term.contains(word[x]) || tech_term.contains(word[x]))
-							weight[x] = 0;
+						String[] wordinterm = word[x].split("_");
+						for (String w : wordinterm) {
+							if (heal_term.contains(w.toLowerCase())) {
+								weight[x] = 10;
+								break;
+							} else if (edu_term.contains(w.toLowerCase()) || tech_term.contains(w.toLowerCase())) {
+								weight[x] = 0;
+								break;
+							} else
+								continue;
+						}
+
 					}
 					for (int i = 0; i < word.length - 1; i++)
 						for (int j = word.length - 1; j > i; j--)
@@ -1131,9 +1161,6 @@ public class createData {
 		extractWord(tech_doc, "technology");
 		extractWord(edu_doc, "education");
 		extractWord(heal_doc, "healthy");
-		// calcVSM("technology");
-		// calcVSM("education");
-		// calcVSM("healthy");
 		calcVSM();
 		getkeyword("technology");
 		getkeyword("education");

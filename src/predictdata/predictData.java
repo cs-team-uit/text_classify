@@ -54,7 +54,7 @@ public class predictData {
 	private List<String> edu_doc = new ArrayList<String>();
 	private List<String> heal_doc = new ArrayList<String>();
 	nlplib lib;
-	int numberword_count = 20;
+	int numberword_count = 15;
 
 	String sentence[] = new String[256];
 	String[] wordsplit = new String[sentence.length];
@@ -264,8 +264,7 @@ public class predictData {
 
 							for (String typtag : type_tagger) {
 								// Type filter
-								String correct_word = lib.sc.check(word[x]);
-								word[x] = correct_word;
+
 								if (typtag != null) {
 									if (word[x].contains(" ")) {
 										word[x].replace(" ", "");
@@ -275,6 +274,8 @@ public class predictData {
 											&& word[x].length() > 1) {
 										word[x] = word[x].replace(typtag, "");
 										word[x] = word[x].toLowerCase();
+										String correct_word = lib.sc.check(word[x]);
+										word[x] = correct_word;
 										isChoose = true;
 										break;
 									}
@@ -287,6 +288,8 @@ public class predictData {
 							if (!temp_wordoffile.contains(word[x])) {
 								if (isChoose == true) {
 									// Them vao csdl
+									if (lstopword.contains(word[x]))
+										continue;
 									temp_wordoffile.add(word[x]);
 									isChoose = false;
 								}
@@ -362,25 +365,49 @@ public class predictData {
 			String edulistword = f.getAbsolutePath() + "/data/testing/" + fedu_doc + "/raw_listword.txt";
 			String heallistword = f.getAbsolutePath() + "/data/testing/" + fheal_doc + "/raw_listword.txt";
 
+			String techterm = f.getAbsolutePath() + "/data/trainning/" + ftech_doc + "/terms.txt";
+			String eduterm = f.getAbsolutePath() + "/data/trainning/" + fedu_doc + "/terms.txt";
+			String healterm = f.getAbsolutePath() + "/data/trainning/" + fheal_doc + "/terms.txt";
 			List<String> documents = new ArrayList<String>();
 			List<String> otherdocuments = new ArrayList<String>();
+			List<String> tech_term = new ArrayList<String>();
+			List<String> edu_term = new ArrayList<String>();
+			List<String> heal_term = new ArrayList<String>();
 			// Read and check the input from the text file
 			try (BufferedReader br = new BufferedReader(new FileReader(mainlistword))) {
 				for (String line; (line = br.readLine()) != null;) {
 					// process the line.
-					documents.add(line);
+					documents.add(line.toLowerCase());
 				}
 			}
 			try (BufferedReader br = new BufferedReader(new FileReader(edulistword))) {
 				for (String line; (line = br.readLine()) != null;) {
 					// process the line.
-					otherdocuments.add(line);
+					otherdocuments.add(line.toLowerCase());
 				}
 			}
 			try (BufferedReader br = new BufferedReader(new FileReader(heallistword))) {
 				for (String line; (line = br.readLine()) != null;) {
 					// process the line.
-					otherdocuments.add(line);
+					otherdocuments.add(line.toLowerCase());
+				}
+			}
+			try (BufferedReader br = new BufferedReader(new FileReader(techterm))) {
+				for (String line; (line = br.readLine()) != null;) {
+					// process the line.
+					tech_term.add(line.toLowerCase());
+				}
+			}
+			try (BufferedReader br = new BufferedReader(new FileReader(eduterm))) {
+				for (String line; (line = br.readLine()) != null;) {
+					// process the line.
+					edu_term.add(line.toLowerCase());
+				}
+			}
+			try (BufferedReader br = new BufferedReader(new FileReader(healterm))) {
+				for (String line; (line = br.readLine()) != null;) {
+					// process the line.
+					heal_term.add(line.toLowerCase());
 				}
 			}
 			for (String doc : documents) {
@@ -408,8 +435,21 @@ public class predictData {
 								numotherDocumentContain++;
 							}
 						}
-						idf[x] = Math.log10((double) document_count / (double) (numotherDocumentContain));
+						idf[x] = Math.log10((double) document_count / (double) (numotherDocumentContain + 1));
 						weight[x] = tf[x] * idf[x];
+						String[] wordinterm = word[x].split("_");
+						for (String w : wordinterm) {
+							if (tech_term.contains(w.toLowerCase())) {
+								weight[x] = 10;
+								break;
+							} else if (edu_term.contains(w.toLowerCase()) || heal_term.contains(w.toLowerCase())) {
+								weight[x] = 0;
+								break;
+							} else {
+								weight[x] = tf[x] * idf[x];
+								continue;
+							}
+						}
 					}
 					for (int i = 0; i < word.length - 1; i++)
 						for (int j = word.length - 1; j > i; j--)
@@ -487,15 +527,26 @@ public class predictData {
 								numDocumentContain++;
 							}
 						}
-						tf[x] = (double) numDocumentContain / (double) documents.size();
+						tf[x] = numDocumentContain / (double) documents.size();
 						int numotherDocumentContain = 0;
 						for (String temp_doc : otherdocuments) {
 							if (temp_doc.contains(word[x])) {
 								numotherDocumentContain++;
 							}
 						}
-						idf[x] = Math.log10((double) document_count / (double) (numotherDocumentContain));
+						idf[x] = Math.log10((double) document_count / (double) (numotherDocumentContain + 1));
 						weight[x] = tf[x] * idf[x];
+						String[] wordinterm = word[x].split("_");
+						for (String w : wordinterm) {
+							if (edu_term.contains(w.toLowerCase())) {
+								weight[x] = 10;
+								break;
+							} else if (heal_term.contains(w.toLowerCase()) || tech_term.contains(w.toLowerCase())) {
+								weight[x] = 0;
+								break;
+							} else
+								continue;
+						}
 					}
 					for (int i = 0; i < word.length - 1; i++)
 						for (int j = word.length - 1; j > i; j--)
@@ -572,15 +623,26 @@ public class predictData {
 								numDocumentContain++;
 							}
 						}
-						tf[x] = (double) numDocumentContain / (double) documents.size();
+						tf[x] = numDocumentContain / (double) documents.size();
 						int numotherDocumentContain = 0;
 						for (String temp_doc : otherdocuments) {
 							if (temp_doc.contains(word[x])) {
 								numotherDocumentContain++;
 							}
 						}
-						idf[x] = Math.log10((double) document_count / (double) (numotherDocumentContain));
+						idf[x] = Math.log10((double) document_count / (double) (numotherDocumentContain + 1));
 						weight[x] = tf[x] * idf[x];
+						String[] wordinterm = word[x].split("_");
+						for (String w : wordinterm) {
+							if (heal_term.contains(w.toLowerCase())) {
+								weight[x] = 10;
+								break;
+							} else if (edu_term.contains(w.toLowerCase()) || tech_term.contains(w.toLowerCase())) {
+								weight[x] = 0;
+								break;
+							} else
+								continue;
+						}
 					}
 					for (int i = 0; i < word.length - 1; i++)
 						for (int j = word.length - 1; j > i; j--)
@@ -606,7 +668,9 @@ public class predictData {
 			bw_listword.close();
 			bw_weight.close();
 
-		} catch (IOException e) {
+		} catch (
+
+		IOException e) {
 			System.out.println("IOException Occured! ");
 			e.printStackTrace();
 		}
@@ -1645,19 +1709,15 @@ public class predictData {
 		bw.close();
 	}
 
-	private void prepareData() throws FileNotFoundException, IOException {
+	public void FpredictData(nlplib lib) throws Exception {
+		this.lib = lib;
+		f = new File(".");
+		stopword();
 		readFile();
 		extractWord(tech_doc, "technology");
 		extractWord(edu_doc, "education");
 		extractWord(heal_doc, "healthy");
 		calcVSM();
-	}
-
-	public void FpredictData(nlplib lib) throws Exception {
-		this.lib = lib;
-		f = new File(".");
-		stopword();
-		prepareData();
 		// knn_predict();
 		// svm_trainning();
 		// svm_predict();
